@@ -68,6 +68,8 @@ model Visit {
   subtotal_labor  Float @default(0)
   subtotal_parts  Float @default(0)
   discount_amount Float @default(0)
+  discount_type   String @default("FLAT") // FLAT, PERCENTAGE
+  tax_rate        Float @default(0)
   tax_amount      Float @default(0)
   grand_total     Float @default(0)
 
