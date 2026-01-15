@@ -1,0 +1,3 @@
+-- AlterTable
+ALTER TABLE "Visit" ADD COLUMN     "discount_type" TEXT NOT NULL DEFAULT 'FLAT',
+ADD COLUMN     "tax_rate" DOUBLE PRECISION NOT NULL DEFAULT 0;
