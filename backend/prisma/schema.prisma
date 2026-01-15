@@ -1,0 +1,124 @@
+datasource db {
+  provider = "postgresql"
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Role {
+  id    Int    @id @default(autoincrement())
+  name  String @unique
+  users User[]
+}
+
+model User {
+  id            Int         @id @default(autoincrement())
+  name          String
+  email         String      @unique
+  password_hash String
+  role          Role        @relation(fields: [role_id], references: [id])
+  role_id       Int
+  created_at    DateTime    @default(now())
+  created_visits Visit[]    @relation("CreatedBy")
+  assigned_visits Visit[]   @relation("AssignedTo")
+  notes         VisitNote[]
+}
+
+model Customer {
+  id         Int       @id @default(autoincrement())
+  name       String
+  phone      String    @unique
+  address    String?
+  created_at DateTime  @default(now())
+  vehicles   Vehicle[]
+  visits     Visit[]
+}
+
+model Vehicle {
+  id          Int      @id @default(autoincrement())
+  reg_no      String   @unique
+  make        String
+  model       String
+  year        Int
+  color       String?
+  vin         String?  @unique
+  mileage     Int?
+  customer    Customer @relation(fields: [customer_id], references: [id])
+  customer_id Int
+  visits      Visit[]
+}
+
+model Visit {
+  id            Int      @id @default(autoincrement())
+  vehicle       Vehicle  @relation(fields: [vehicle_id], references: [id])
+  vehicle_id    Int
+  customer      Customer @relation(fields: [customer_id], references: [id])
+  customer_id   Int
+  status        String   @default("CREATED") // CREATED, IN_PROGRESS, WAITING_PARTS, READY, DELIVERED, CANCELLED
+  complaint     String
+  priority      String?  // LOW, MEDIUM, HIGH
+  expected_delivery DateTime?
+
+  assigned_mechanic    User?    @relation("AssignedTo", fields: [assigned_mechanic_id], references: [id])
+  assigned_mechanic_id Int?
+  created_by           User     @relation("CreatedBy", fields: [created_by_user_id], references: [id])
+  created_by_user_id   Int
+
+  subtotal_labor  Float @default(0)
+  subtotal_parts  Float @default(0)
+  discount_amount Float @default(0)
+  tax_amount      Float @default(0)
+  grand_total     Float @default(0)
+
+  payment_status String @default("UNPAID") // UNPAID, PARTIAL, PAID
+  paid_amount    Float @default(0)
+  due_amount     Float @default(0)
+
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  labor_items LaborItem[]
+  part_items  PartItem[]
+  payments    Payment[]
+  notes       VisitNote[]
+}
+
+model LaborItem {
+  id       Int    @id @default(autoincrement())
+  visit    Visit  @relation(fields: [visit_id], references: [id])
+  visit_id Int
+  title    String
+  hours    Float
+  rate     Float
+  subtotal Float
+}
+
+model PartItem {
+  id         Int    @id @default(autoincrement())
+  visit      Visit  @relation(fields: [visit_id], references: [id])
+  visit_id   Int
+  name       String
+  qty        Int
+  unit_price Float
+  subtotal   Float
+}
+
+model Payment {
+  id          Int      @id @default(autoincrement())
+  visit       Visit    @relation(fields: [visit_id], references: [id])
+  visit_id    Int
+  paid_amount Float
+  method      String? // CASH, CARD, TRANSFER
+  paid_at     DateTime @default(now())
+}
+
+model VisitNote {
+  id         Int      @id @default(autoincrement())
+  visit      Visit    @relation(fields: [visit_id], references: [id])
+  visit_id   Int
+  note       String
+  created_by User     @relation(fields: [created_by_user_id], references: [id])
+  created_by_user_id Int
+  created_at DateTime @default(now())
+}
