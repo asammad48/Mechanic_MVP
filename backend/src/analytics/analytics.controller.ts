@@ -51,7 +51,7 @@ export const getRange = async (req: Request, res: Response) => {
 const getAnalyticsData = async (dateFrom: Date, dateTo: Date) => {
   const total_visits = await prisma.visit.count({
     where: {
-      created_at: {
+      createdAt: {
         gte: dateFrom,
         lte: dateTo,
       },
@@ -60,11 +60,11 @@ const getAnalyticsData = async (dateFrom: Date, dateTo: Date) => {
 
   const revenue = await prisma.visit.aggregate({
     _sum: {
-      grand_total: true,
+      grandTotal: true,
     },
     where: {
       status: 'DELIVERED',
-      created_at: {
+      createdAt: {
         gte: dateFrom,
         lte: dateTo,
       },
@@ -73,13 +73,13 @@ const getAnalyticsData = async (dateFrom: Date, dateTo: Date) => {
 
   const unpaid = await prisma.visit.aggregate({
     _sum: {
-      due_amount: true,
+      dueAmount: true,
     },
     where: {
-      due_amount: {
+      dueAmount: {
         gt: 0,
       },
-      created_at: {
+      createdAt: {
         gte: dateFrom,
         lte: dateTo,
       },
@@ -88,7 +88,7 @@ const getAnalyticsData = async (dateFrom: Date, dateTo: Date) => {
 
   return {
     total_visits,
-    total_revenue: revenue._sum.grand_total || 0,
-    unpaid_amount: unpaid._sum.due_amount || 0,
+    total_revenue: revenue._sum?.grandTotal || 0,
+    unpaid_amount: unpaid._sum?.dueAmount || 0,
   };
 };

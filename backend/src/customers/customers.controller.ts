@@ -25,7 +25,7 @@ export const createCustomer = async (req: Request, res: Response) => {
   try {
     const { name, phone, address } = customerSchema.parse(req.body);
     const customer = await prisma.customer.create({
-      data: { name, phone, address },
+      data: { name, phone, address, branchId: req.user!.branchId! },
     });
     res.status(201).json(customer);
   } catch (error) {

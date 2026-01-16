@@ -7,7 +7,7 @@ const userSchema = z.object({
   name: z.string().min(1),
   email: z.string().email(),
   password: z.string().min(6),
-  role_id: z.number().int(),
+  roleId: z.string(),
 });
 
 export const getUsers = async (req: Request, res: Response) => {
@@ -19,10 +19,10 @@ export const getUsers = async (req: Request, res: Response) => {
 
 export const createUser = async (req: Request, res: Response) => {
   try {
-    const { name, email, password, role_id } = userSchema.parse(req.body);
+    const { name, email, password, roleId } = userSchema.parse(req.body);
     const password_hash = await bcrypt.hash(password, 10);
     const user = await prisma.user.create({
-      data: { name, email, password_hash, role_id },
+      data: { name, email, password_hash, roleId },
       include: { role: true },
     });
     res.status(201).json(user);

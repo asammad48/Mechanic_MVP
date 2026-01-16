@@ -14,6 +14,7 @@ declare global {
       user?: {
         id: string;
         role: string;
+        branchId?: string | null;
       };
     }
   }
