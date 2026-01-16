@@ -6,121 +6,212 @@ generator client {
   provider = "prisma-client-js"
 }
 
+model Branch {
+  id        String   @id @default(cuid())
+  name      String
+  code      String   @unique
+  address   String?
+  phone     String?
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  users     User[]
+  customers Customer[]
+  vehicles  Vehicle[]
+  visits    Visit[]
+  visitEvents VisitEvent[]
+}
+
 model Role {
-  id    Int    @id @default(autoincrement())
+  id    String @id @default(cuid())
   name  String @unique
   users User[]
 }
 
 model User {
-  id            Int         @id @default(autoincrement())
+  id            String      @id @default(cuid())
   name          String
   email         String      @unique
   password_hash String
-  role          Role        @relation(fields: [role_id], references: [id])
-  role_id       Int
-  created_at    DateTime    @default(now())
-  created_visits Visit[]    @relation("CreatedBy")
-  assigned_visits Visit[]   @relation("AssignedTo")
-  notes         VisitNote[]
+  isSuperAdmin  Boolean     @default(false)
+
+  role    Role   @relation(fields: [roleId], references: [id])
+  roleId  String
+
+  branch   Branch? @relation(fields: [branchId], references: [id])
+  branchId String?
+
+  createdAt DateTime @default(now())
+
+  createdVisits    Visit[]      @relation("CreatedBy")
+  assignedVisits   Visit[]      @relation("AssignedTo")
+  notes            VisitNote[]
+  voidedPayments   Payment[]    @relation("VoidedBy")
+  deletedLaborItems LaborItem[] @relation("DeletedByLabor")
+  deletedPartItems  PartItem[]  @relation("DeletedByPart")
+  visitEvents      VisitEvent[]
 }
 
 model Customer {
-  id         Int       @id @default(autoincrement())
-  name       String
-  phone      String    @unique
-  address    String?
-  created_at DateTime  @default(now())
-  vehicles   Vehicle[]
-  visits     Visit[]
+  id      String   @id @default(cuid())
+  name    String
+  phone   String
+  address String?
+
+  branch   Branch @relation(fields: [branchId], references: [id])
+  branchId String
+
+  createdAt DateTime @default(now())
+
+  vehicles Vehicle[]
+  visits   Visit[]
+
+  @@unique([phone, branchId])
+  @@index([branchId, phone])
 }
 
 model Vehicle {
-  id          Int      @id @default(autoincrement())
-  reg_no      String   @unique
-  make        String
-  model       String
-  year        Int
-  color       String?
-  vin         String?  @unique
-  mileage     Int?
-  customer    Customer @relation(fields: [customer_id], references: [id])
-  customer_id Int
-  visits      Visit[]
+  id      String @id @default(cuid())
+  regNo   String
+  make    String
+  model   String
+  year    Int
+  color   String?
+  vin     String?  @unique
+  mileage Int?
+
+  customer   Customer @relation(fields: [customerId], references: [id])
+  customerId String
+
+  branch   Branch @relation(fields: [branchId], references: [id])
+  branchId String
+
+  visits Visit[]
+
+  @@unique([regNo, branchId])
+  @@index([branchId, regNo])
 }
 
 model Visit {
-  id            Int      @id @default(autoincrement())
-  vehicle       Vehicle  @relation(fields: [vehicle_id], references: [id])
-  vehicle_id    Int
-  customer      Customer @relation(fields: [customer_id], references: [id])
-  customer_id   Int
-  status        String   @default("CREATED") // CREATED, IN_PROGRESS, WAITING_PARTS, READY, DELIVERED, CANCELLED
-  complaint     String
-  priority      String?  // LOW, MEDIUM, HIGH
-  expected_delivery DateTime?
+  id                String    @id @default(cuid())
+  status            String    @default("CREATED") // CREATED, IN_PROGRESS, WAITING_PARTS, READY, DELIVERED, CANCELLED
+  complaint         String
+  priority          String?   // LOW, MEDIUM, HIGH
+  expectedDelivery  DateTime?
 
-  assigned_mechanic    User?    @relation("AssignedTo", fields: [assigned_mechanic_id], references: [id])
-  assigned_mechanic_id Int?
-  created_by           User     @relation("CreatedBy", fields: [created_by_user_id], references: [id])
-  created_by_user_id   Int
+  subtotalLabor   Float @default(0)
+  subtotalParts   Float @default(0)
+  discountAmount  Float @default(0)
+  discountType    String @default("FLAT") // FLAT, PERCENTAGE
+  taxRate         Float @default(0)
+  taxAmount       Float @default(0)
+  grandTotal      Float @default(0)
 
-  subtotal_labor  Float @default(0)
-  subtotal_parts  Float @default(0)
-  discount_amount Float @default(0)
-  discount_type   String @default("FLAT") // FLAT, PERCENTAGE
-  tax_rate        Float @default(0)
-  tax_amount      Float @default(0)
-  grand_total     Float @default(0)
+  paymentStatus String @default("UNPAID") // UNPAID, PARTIAL, PAID
+  paidAmount    Float @default(0)
+  dueAmount     Float @default(0)
 
-  payment_status String @default("UNPAID") // UNPAID, PARTIAL, PAID
-  paid_amount    Float @default(0)
-  due_amount     Float @default(0)
+  vehicle   Vehicle @relation(fields: [vehicleId], references: [id])
+  vehicleId String
 
-  created_at DateTime @default(now())
-  updated_at DateTime @updatedAt
+  customer   Customer @relation(fields: [customerId], references: [id])
+  customerId String
 
-  labor_items LaborItem[]
-  part_items  PartItem[]
-  payments    Payment[]
-  notes       VisitNote[]
+  branch   Branch @relation(fields: [branchId], references: [id])
+  branchId String
+
+  assignedMechanic    User?    @relation("AssignedTo", fields: [assignedMechanicId], references: [id])
+  assignedMechanicId  String?
+
+  createdBy          User     @relation("CreatedBy", fields: [createdByUserId], references: [id])
+  createdByUserId    String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  laborItems LaborItem[]
+  partItems  PartItem[]
+  payments   Payment[]
+  notes      VisitNote[]
+  events     VisitEvent[]
+
+  @@index([branchId, createdAt])
+  @@index([branchId, status])
 }
 
 model LaborItem {
-  id       Int    @id @default(autoincrement())
-  visit    Visit  @relation(fields: [visit_id], references: [id])
-  visit_id Int
-  title    String
-  hours    Float
-  rate     Float
-  subtotal Float
+  id        String   @id @default(cuid())
+  title     String
+  hours     Float
+  rate      Float
+  subtotal  Float
+
+  visit    Visit  @relation(fields: [visitId], references: [id])
+  visitId  String
+
+  deletedAt       DateTime?
+  deletedBy       User?     @relation("DeletedByLabor", fields: [deletedByUserId], references: [id])
+  deletedByUserId String?
 }
 
 model PartItem {
-  id         Int    @id @default(autoincrement())
-  visit      Visit  @relation(fields: [visit_id], references: [id])
-  visit_id   Int
+  id         String   @id @default(cuid())
   name       String
   qty        Int
-  unit_price Float
+  unitPrice  Float
   subtotal   Float
+
+  visit    Visit  @relation(fields: [visitId], references: [id])
+  visitId  String
+
+  deletedAt       DateTime?
+  deletedBy       User?     @relation("DeletedByPart", fields: [deletedByUserId], references: [id])
+  deletedByUserId String?
 }
 
 model Payment {
-  id          Int      @id @default(autoincrement())
-  visit       Visit    @relation(fields: [visit_id], references: [id])
-  visit_id    Int
-  paid_amount Float
-  method      String? // CASH, CARD, TRANSFER
-  paid_at     DateTime @default(now())
+  id          String   @id @default(cuid())
+  paidAmount  Float
+  method      String?  // CASH, CARD, TRANSFER
+  paidAt      DateTime @default(now())
+
+  visit    Visit @relation(fields: [visitId], references: [id])
+  visitId  String
+
+  isVoided        Boolean   @default(false)
+  voidReason      String?
+  voidedAt        DateTime?
+  voidedBy        User?     @relation("VoidedBy", fields: [voidedByUserId], references: [id])
+  voidedByUserId  String?
 }
 
 model VisitNote {
-  id         Int      @id @default(autoincrement())
-  visit      Visit    @relation(fields: [visit_id], references: [id])
-  visit_id   Int
-  note       String
-  created_by User     @relation(fields: [created_by_user_id], references: [id])
-  created_by_user_id Int
-  created_at DateTime @default(now())
+  id        String   @id @default(cuid())
+  note      String
+
+  visit    Visit @relation(fields: [visitId], references: [id])
+  visitId  String
+
+  createdBy      User     @relation(fields: [createdByUserId], references: [id])
+  createdByUserId String
+
+  createdAt DateTime @default(now())
+}
+
+model VisitEvent {
+  id        String   @id @default(cuid())
+  type      String   // E.g., 'STATUS_CHANGE', 'PAYMENT_VOIDED', 'MECHANIC_ASSIGNED'
+  payloadJson String?
+
+  visit    Visit @relation(fields: [visitId], references: [id])
+  visitId  String
+
+  branch   Branch @relation(fields: [branchId], references: [id])
+  branchId String
+
+  createdBy      User     @relation(fields: [createdByUserId], references: [id])
+  createdByUserId String
+
+  createdAt DateTime @default(now())
 }
