@@ -55,8 +55,8 @@ export const getMe = async (req: Request, res: Response) => {
     include: { role: true },
   });
 
-  if (!user) {
-    return res.status(404).json({ message: 'User not found.' });
+  if (!user || !user.role) {
+    return res.status(404).json({ message: 'User not found or role missing.' });
   }
 
   res.json({

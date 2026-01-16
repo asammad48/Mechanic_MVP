@@ -4,7 +4,7 @@ import prisma from '../lib/prisma';
 import config from '../lib/config';
 
 interface JwtPayload {
-  userId: number;
+  userId: string;
 }
 
 // Extend the Express Request interface to include the user object
@@ -12,7 +12,7 @@ declare global {
   namespace Express {
     interface Request {
       user?: {
-        id: number;
+        id: string;
         role: string;
       };
     }

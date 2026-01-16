@@ -4,6 +4,7 @@ declare global {
   namespace Express {
     interface User {
       id: string;
+      role?: string;
       roleId?: string;
       branchId?: string | null;
       isSuperAdmin?: boolean;
