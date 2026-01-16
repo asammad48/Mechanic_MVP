@@ -1,42 +1,144 @@
-
 import prisma from '../src/lib/prisma';
 import bcrypt from 'bcrypt';
 
 async function main() {
   console.log('Start seeding...');
 
-  // Create roles
-  const adminRole = await prisma.role.create({
-    data: { name: 'Owner/Admin' },
-  });
-  console.log('Created admin role');
+  await prisma.$transaction(async (prisma) => {
+    // Create Roles
+    const ownerAdminRole = await prisma.role.upsert({
+      where: { name: 'Owner/Admin' },
+      update: {},
+      create: { name: 'Owner/Admin' },
+    });
 
-  await prisma.role.create({
-    data: { name: 'Manager' },
-  });
-  console.log('Created manager role');
+    const managerRole = await prisma.role.upsert({
+      where: { name: 'Manager' },
+      update: {},
+      create: { name: 'Manager' },
+    });
 
-  await prisma.role.create({
-    data: { name: 'Mechanic' },
-  });
-    console.log('Created mechanic role');
+    const mechanicRole = await prisma.role.upsert({
+      where: { name: 'Mechanic' },
+      update: {},
+      create: { name: 'Mechanic' },
+    });
 
-  await prisma.role.create({
-    data: { name: 'Receptionist' },
-  });
-    console.log('Created receptionist role');
+    const receptionistRole = await prisma.role.upsert({
+      where: { name: 'Receptionist' },
+      update: {},
+      create: { name: 'Receptionist' },
+    });
 
-  // Create admin user
-  const hashedPassword = await bcrypt.hash('Password123!', 10);
-  await prisma.user.create({
-    data: {
-      name: 'Admin User',
-      email: 'admin@local',
-      password_hash: hashedPassword,
-      role_id: adminRole.id,
-    },
+    // Create Branches
+    const branch1 = await prisma.branch.upsert({
+      where: { code: 'ISB-01' },
+      update: {},
+      create: {
+        name: 'Islamabad Branch',
+        code: 'ISB-01',
+        address: '123, Islamabad, Pakistan',
+        phone: '051-1234567',
+      },
+    });
+
+    const branch2 = await prisma.branch.upsert({
+      where: { code: 'LHR-01' },
+      update: {},
+      create: {
+        name: 'Lahore Branch',
+        code: 'LHR-01',
+        address: '456, Lahore, Pakistan',
+        phone: '042-1234567',
+      },
+    });
+
+    // Hash a default password
+    const defaultPassword = await bcrypt.hash('Password123!', 10);
+
+    // Create Super Admin
+    await prisma.user.upsert({
+      where: { email: 'admin@local' },
+      update: {},
+      create: {
+        name: 'Super Admin',
+        email: 'admin@local',
+        password_hash: defaultPassword,
+        roleId: ownerAdminRole.id,
+        isSuperAdmin: true,
+      },
+    });
+
+    // Create Branch 1 Users
+    await prisma.user.upsert({
+      where: { email: 'manager1@local' },
+      update: {},
+      create: {
+        name: 'Manager Branch 1',
+        email: 'manager1@local',
+        password_hash: defaultPassword,
+        roleId: managerRole.id,
+        branchId: branch1.id,
+      },
+    });
+    await prisma.user.upsert({
+      where: { email: 'mechanic1@local' },
+      update: {},
+      create: {
+        name: 'Mechanic Branch 1',
+        email: 'mechanic1@local',
+        password_hash: defaultPassword,
+        roleId: mechanicRole.id,
+        branchId: branch1.id,
+      },
+    });
+    await prisma.user.upsert({
+      where: { email: 'receptionist1@local' },
+      update: {},
+      create: {
+        name: 'Receptionist Branch 1',
+        email: 'receptionist1@local',
+        password_hash: defaultPassword,
+        roleId: receptionistRole.id,
+        branchId: branch1.id,
+      },
+    });
+
+    // Create Branch 2 Users
+    await prisma.user.upsert({
+      where: { email: 'manager2@local' },
+      update: {},
+      create: {
+        name: 'Manager Branch 2',
+        email: 'manager2@local',
+        password_hash: defaultPassword,
+        roleId: managerRole.id,
+        branchId: branch2.id,
+      },
+    });
+    await prisma.user.upsert({
+      where: { email: 'mechanic2@local' },
+      update: {},
+      create: {
+        name: 'Mechanic Branch 2',
+        email: 'mechanic2@local',
+        password_hash: defaultPassword,
+        roleId: mechanicRole.id,
+        branchId: branch2.id,
+      },
+    });
+    await prisma.user.upsert({
+      where: { email: 'receptionist2@local' },
+      update: {},
+      create: {
+        name: 'Receptionist Branch 2',
+        email: 'receptionist2@local',
+        password_hash: defaultPassword,
+        roleId: receptionistRole.id,
+        branchId: branch2.id,
+      },
+    });
   });
-  console.log('Created admin user');
 
   console.log('Seeding finished.');
 }
