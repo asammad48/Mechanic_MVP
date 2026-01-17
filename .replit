@@ -1,4 +1,4 @@
-modules = ["nodejs-20", "web", "postgresql-16"]
+modules = ["nodejs-20", "web"]
 [agent]
 expertMode = true
 
@@ -49,3 +49,8 @@ externalPort = 3000
 deploymentTarget = "autoscale"
 run = ["bash", "-c", "cd backend && npm run build && npm run start & cd frontend && npm run build && npm run preview"]
 build = ["bash", "-c", "cd backend && npm install && npm run build && cd ../frontend && npm install && npm run build"]
+
+[userenv]
+
+[userenv.shared]
+JWT_SECRET = "E64xKjl7DanxmX2j3XnSWS9QOlZt4c/voNC48zCMecw="
