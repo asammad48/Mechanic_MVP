@@ -97,13 +97,11 @@ model Visit {
   id                String    @id @default(cuid())
   status            String    @default("CREATED") // CREATED, IN_PROGRESS, WAITING_PARTS, READY, DELIVERED, CANCELLED
   complaint         String
-  mileage           Int
   priority          String?   // LOW, MEDIUM, HIGH
   expectedDelivery  DateTime?
 
   subtotalLabor   Float @default(0)
   subtotalParts   Float @default(0)
-  subtotalOutside Float @default(0)
   discountAmount  Float @default(0)
   discountType    String @default("FLAT") // FLAT, PERCENTAGE
   taxRate         Float @default(0)
@@ -134,7 +132,6 @@ model Visit {
 
   laborItems LaborItem[]
   partItems  PartItem[]
-  outsideWorkItems OutsideWorkItem[]
   payments   Payment[]
   notes      VisitNote[]
   events     VisitEvent[]
@@ -147,7 +144,7 @@ model LaborItem {
   id        String   @id @default(cuid())
   title     String
   hours     Float
-  ratePerHour Float
+  rate      Float
   subtotal  Float
 
   visit    Visit  @relation(fields: [visitId], references: [id])
@@ -171,19 +168,6 @@ model PartItem {
   deletedAt       DateTime?
   deletedBy       User?     @relation("DeletedByPart", fields: [deletedByUserId], references: [id])
   deletedByUserId String?
-}
-
-model OutsideWorkItem {
-  id              String   @id @default(cuid())
-  vendorName      String
-  workDescription String
-  cost            Float
-  notes           String?
-
-  visit    Visit  @relation(fields: [visitId], references: [id])
-  visitId  String
-
-  createdAt DateTime @default(now())
 }
 
 model Payment {
