@@ -69,6 +69,19 @@ async function main() {
       },
     });
 
+    // Additional Owner/Admin
+    await prisma.user.upsert({
+      where: { email: 'owner@local' },
+      update: {},
+      create: {
+        name: 'Owner User',
+        email: 'owner@local',
+        password_hash: defaultPassword,
+        roleId: ownerAdminRole.id,
+        branchId: branch1.id,
+      },
+    });
+
     // Create Branch 1 Users
     await prisma.user.upsert({
       where: { email: 'manager1@local' },
