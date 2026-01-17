@@ -56,7 +56,7 @@ const VisitsTable = ({ visits, onRowClick }) => {
             >
               <TableCell onClick={() => onRowClick(visit.id)}>
                 <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>
-                  {visit.vehicle.reg_no}
+                  {visit.vehicle.regNo}
                 </Typography>
                 <Typography variant="caption" color="text.secondary">
                   {visit.vehicle.make} {visit.vehicle.model}
@@ -74,15 +74,15 @@ const VisitsTable = ({ visits, onRowClick }) => {
               </TableCell>
               <TableCell onClick={() => onRowClick(visit.id)}>
                 <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                  ${visit.grand_total.toLocaleString()}
+                  ${(visit.grandTotal ? Number(visit.grandTotal) : 0).toLocaleString()}
                 </Typography>
               </TableCell>
               <TableCell onClick={() => onRowClick(visit.id)}>
                 <Chip 
-                  label={visit.payment_status} 
+                  label={visit.paymentStatus} 
                   size="small" 
                   variant="outlined"
-                  color={visit.payment_status === 'PAID' ? 'success' : 'warning'}
+                  color={visit.paymentStatus === 'PAID' ? 'success' : 'warning'}
                   sx={{ fontSize: '0.65rem' }}
                 />
               </TableCell>
