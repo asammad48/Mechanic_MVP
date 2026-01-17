@@ -32,37 +32,28 @@ const NewCarEntryModal = ({ open, handleClose, onVisitCreated }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      // First, create or find the customer
+      // First, create or find the customer and vehicle
       let customer;
-      try {
-        const { data } = await api.get(`/customers?search=${formData.customerPhone}`);
-        if (data.length > 0) {
-          customer = data[0];
-        } else {
-          const { data: newCustomer } = await api.post('/customers', { name: formData.customerName, phone: formData.customerPhone });
-          customer = newCustomer;
-        }
-      } catch (error) {
-        const { data: newCustomer } = await api.post('/customers', { name: formData.customerName, phone: formData.customerPhone });
-        customer = newCustomer;
-      }
-
-
-      // Then, create or find the vehicle
       let vehicle;
+      
       try {
-        const { data } = await api.get(`/vehicles?search=${formData.reg_no}`);
-        if (data.length > 0) {
-          vehicle = data[0];
-        } else {
-          const { data: newVehicle } = await api.post('/vehicles', { reg_no: formData.reg_no, make: formData.make, model: formData.model, year: parseInt(formData.year), customer_id: customer.id });
-          vehicle = newVehicle;
-        }
+        // Send everything in one request to the new transactional endpoint
+        const { data: result } = await api.post('/customers', {
+          name: formData.customerName,
+          phone: formData.customerPhone,
+          vehicle: {
+            regNo: formData.reg_no,
+            make: formData.make,
+            model: formData.model,
+            year: formData.year
+          }
+        });
+        customer = result.customer;
+        vehicle = result.vehicle;
       } catch (error) {
-        const { data: newVehicle } = await api.post('/vehicles', { reg_no: formData.reg_no, make: formData.make, model: formData.model, year: parseInt(formData.year), customer_id: customer.id });
-        vehicle = newVehicle;
+        console.error('Failed to create customer/vehicle:', error);
+        throw error;
       }
-
 
       // Finally, create the visit
       const { data: newVisit } = await api.post('/visits', {
