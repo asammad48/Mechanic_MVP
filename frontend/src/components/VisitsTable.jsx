@@ -9,26 +9,6 @@ import {
   Paper, 
   Chip,
   Typography,
-  Box
-} from '@mui/material';
-
-const statusColors = {
-  'PENDING': 'warning',
-  'IN_PROGRESS': 'info',
-  'COMPLETED': 'success',
-  'CANCELLED': 'error'
-};
-
-import { 
-  Table, 
-  TableBody, 
-  TableCell, 
-  TableContainer, 
-  TableHead, 
-  TableRow, 
-  Paper, 
-  Chip,
-  Typography,
   Box,
   IconButton,
   Tooltip
