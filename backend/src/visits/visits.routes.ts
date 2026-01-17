@@ -10,7 +10,8 @@ import {
   deletePartItem,
   addOutsideWorkItem,
   deleteOutsideWorkItem,
-  addPayment 
+  addPayment,
+  exportVisits
 } from './visits.controller';
 import { authenticate, authorize } from '../auth/auth.middleware';
 
