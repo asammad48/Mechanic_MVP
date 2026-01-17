@@ -1,5 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { Box, Typography, Grid, Paper } from '@mui/material';
+import { Box, Typography, Grid, Paper, Stack, useTheme } from '@mui/material';
+import { 
+  TrendingUp as TrendingUpIcon, 
+  AttachMoney as MoneyIcon, 
+  EventNote as EventIcon 
+} from '@mui/icons-material';
 import api from '../services/api';
 
 const AnalyticsSnapshot = () => {
@@ -29,24 +34,41 @@ const AnalyticsSnapshot = () => {
     fetchSummary();
   }, []);
 
-  const StatCard = ({ title, data }) => (
+  const StatCard = ({ title, data, icon: Icon, color }) => (
     <Grid item xs={12} sm={4}>
-      <Paper sx={{ p: 2 }}>
-        <Typography variant="h6">{title}</Typography>
-        <Typography>Total Visits: {data.total_visits}</Typography>
-        <Typography>Total Revenue: ${data.total_revenue.toFixed(2)}</Typography>
-        <Typography>Unpaid Amount: ${data.unpaid_amount.toFixed(2)}</Typography>
+      <Paper sx={{ p: 3, position: 'relative', overflow: 'hidden' }}>
+        <Box sx={{ position: 'absolute', top: -10, right: -10, opacity: 0.1 }}>
+          <Icon sx={{ fontSize: 100, color }} />
+        </Box>
+        <Typography variant="overline" color="text.secondary" sx={{ fontWeight: 700 }}>
+          {title}
+        </Typography>
+        <Typography variant="h4" sx={{ mb: 2, fontWeight: 700 }}>
+          ${data.total_revenue.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+        </Typography>
+        <Stack direction="row" spacing={3}>
+          <Box>
+            <Typography variant="caption" color="text.secondary" display="block">Visits</Typography>
+            <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>{data.total_visits}</Typography>
+          </Box>
+          <Box>
+            <Typography variant="caption" color="text.secondary" display="block">Unpaid</Typography>
+            <Typography variant="subtitle2" color="error.main" sx={{ fontWeight: 700 }}>
+              ${data.unpaid_amount.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+            </Typography>
+          </Box>
+        </Stack>
       </Paper>
     </Grid>
   );
 
   return (
     <Box>
-      <Typography variant="h6">Analytics Snapshot</Typography>
-      <Grid container spacing={3} sx={{ mt: 1 }}>
-        <StatCard title="This Week" data={summary.week} />
-        <StatCard title="This Month" data={summary.month} />
-        <StatCard title="This Year" data={summary.year} />
+      <Typography variant="h6" sx={{ mb: 2 }}>Business Insights</Typography>
+      <Grid container spacing={3}>
+        <StatCard title="This Week" data={summary.week} icon={TrendingUpIcon} color="primary.main" />
+        <StatCard title="This Month" data={summary.month} icon={EventIcon} color="secondary.main" />
+        <StatCard title="This Year" data={summary.year} icon={MoneyIcon} color="success.main" />
       </Grid>
     </Box>
   );
