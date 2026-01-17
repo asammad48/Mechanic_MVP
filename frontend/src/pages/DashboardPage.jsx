@@ -65,8 +65,8 @@ const DashboardPage = () => {
 
   return (
     <Box sx={{ flexGrow: 1, bgcolor: 'background.default', minHeight: '100vh' }}>
-      <AppBar position="sticky" elevation={0} sx={{ borderBottom: '1px solid', borderColor: 'divider', bgcolor: 'background.paper', color: 'text.primary' }}>
-        <Container maxWidth="xl">
+      <AppBar position="sticky" elevation={0} sx={{ borderBottom: '1px solid', borderColor: 'divider', bgcolor: 'background.paper', color: 'text.primary', width: '100%' }}>
+        <Box sx={{ px: { xs: 2, sm: 4, md: 6 } }}>
           <Toolbar disableGutters sx={{ justifyContent: 'space-between' }}>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
               <CarIcon color="primary" sx={{ fontSize: 32 }} />
@@ -99,7 +99,7 @@ const DashboardPage = () => {
               </Button>
             </Stack>
           </Toolbar>
-        </Container>
+        </Box>
       </AppBar>
 
       <Container maxWidth="xl" sx={{ mt: 4, mb: 4 }}>

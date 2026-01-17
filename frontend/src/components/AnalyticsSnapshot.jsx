@@ -36,7 +36,21 @@ const AnalyticsSnapshot = () => {
 
   const StatCard = ({ title, data, icon: Icon, color }) => (
     <Grid item xs={12} sm={4}>
-      <Paper sx={{ p: 3, position: 'relative', overflow: 'hidden' }}>
+      <Paper 
+        elevation={0}
+        sx={{ 
+          p: 3, 
+          position: 'relative', 
+          overflow: 'hidden',
+          border: '1px solid',
+          borderColor: 'divider',
+          transition: 'transform 0.2s, box-shadow 0.2s',
+          '&:hover': {
+            transform: 'translateY(-4px)',
+            boxShadow: '0 12px 24px -10px rgba(0,0,0,0.1)'
+          }
+        }}
+      >
         <Box sx={{ position: 'absolute', top: -10, right: -10, opacity: 0.1 }}>
           <Icon sx={{ fontSize: 100, color }} />
         </Box>
