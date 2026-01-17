@@ -77,9 +77,9 @@ const AnalyticsSnapshot = () => {
   );
 
   return (
-    <Box>
+    <Box sx={{ width: '100%' }}>
       <Typography variant="h6" sx={{ mb: 2 }}>Business Insights</Typography>
-      <Grid container spacing={3}>
+      <Grid container spacing={3} sx={{ width: '100%', margin: 0 }}>
         <StatCard title="This Week" data={summary.week} icon={TrendingUpIcon} color="primary.main" />
         <StatCard title="This Month" data={summary.month} icon={EventIcon} color="secondary.main" />
         <StatCard title="This Year" data={summary.year} icon={MoneyIcon} color="success.main" />
