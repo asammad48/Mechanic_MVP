@@ -97,20 +97,22 @@ model Visit {
   id                String    @id @default(cuid())
   status            String    @default("CREATED") // CREATED, IN_PROGRESS, WAITING_PARTS, READY, DELIVERED, CANCELLED
   complaint         String
+  mileage           Int
   priority          String?   // LOW, MEDIUM, HIGH
   expectedDelivery  DateTime?
 
-  subtotalLabor   Float @default(0)
-  subtotalParts   Float @default(0)
-  discountAmount  Float @default(0)
+  subtotalLabor   Decimal @default(0)
+  subtotalParts   Decimal @default(0)
+  subtotalOutside Decimal @default(0)
+  discountAmount  Decimal @default(0)
   discountType    String @default("FLAT") // FLAT, PERCENTAGE
-  taxRate         Float @default(0)
-  taxAmount       Float @default(0)
-  grandTotal      Float @default(0)
+  taxRate         Decimal @default(0)
+  taxAmount       Decimal @default(0)
+  grandTotal      Decimal @default(0)
 
   paymentStatus String @default("UNPAID") // UNPAID, PARTIAL, PAID
-  paidAmount    Float @default(0)
-  dueAmount     Float @default(0)
+  paidAmount    Decimal @default(0)
+  dueAmount     Decimal @default(0)
 
   vehicle   Vehicle @relation(fields: [vehicleId], references: [id])
   vehicleId String
@@ -130,11 +132,12 @@ model Visit {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  laborItems LaborItem[]
-  partItems  PartItem[]
-  payments   Payment[]
-  notes      VisitNote[]
-  events     VisitEvent[]
+  laborItems    LaborItem[]
+  partItems     PartItem[]
+  outsideItems  OutsideWorkItem[]
+  payments      Payment[]
+  notes         VisitNote[]
+  events        VisitEvent[]
 
   @@index([branchId, createdAt])
   @@index([branchId, status])
@@ -143,9 +146,9 @@ model Visit {
 model LaborItem {
   id        String   @id @default(cuid())
   title     String
-  hours     Float
-  rate      Float
-  subtotal  Float
+  hours     Decimal
+  ratePerHour Decimal
+  subtotal  Decimal
 
   visit    Visit  @relation(fields: [visitId], references: [id])
   visitId  String
@@ -159,8 +162,8 @@ model PartItem {
   id         String   @id @default(cuid())
   name       String
   qty        Int
-  unitPrice  Float
-  subtotal   Float
+  unitPrice  Decimal
+  subtotal   Decimal
 
   visit    Visit  @relation(fields: [visitId], references: [id])
   visitId  String
@@ -170,9 +173,21 @@ model PartItem {
   deletedByUserId String?
 }
 
+model OutsideWorkItem {
+  id              String   @id @default(cuid())
+  vendorName      String
+  workDescription String
+  cost            Decimal
+  notes           String?
+  createdAt       DateTime @default(now())
+
+  visit    Visit  @relation(fields: [visitId], references: [id])
+  visitId  String
+}
+
 model Payment {
   id          String   @id @default(cuid())
-  paidAmount  Float
+  paidAmount  Decimal
   method      String?  // CASH, CARD, TRANSFER
   paidAt      DateTime @default(now())
 
