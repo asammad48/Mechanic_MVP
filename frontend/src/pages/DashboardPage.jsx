@@ -136,7 +136,9 @@ const DashboardPage = () => {
                 <VisitsTable visits={visits} onRowClick={handleRowClick} />
               </Box>
             </Paper>
-            <Grid item xs={12} lg={4}>
+          </Grid>
+
+          <Grid item xs={12} lg={4}>
             <Paper sx={{ p: 3, height: '100%' }}>
               <Typography variant="h6" gutterBottom>Visit Details</Typography>
               <VisitDetailsPanel visitId={selectedVisitId} onUpdate={handleVisitUpdate} />

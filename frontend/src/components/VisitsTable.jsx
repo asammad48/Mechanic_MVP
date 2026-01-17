@@ -19,6 +19,32 @@ const statusColors = {
   'CANCELLED': 'error'
 };
 
+import { 
+  Table, 
+  TableBody, 
+  TableCell, 
+  TableContainer, 
+  TableHead, 
+  TableRow, 
+  Paper, 
+  Chip,
+  Typography,
+  Box,
+  IconButton,
+  Tooltip
+} from '@mui/material';
+import { 
+  AddCircleOutline as AddVisitIcon,
+  Visibility as ViewIcon
+} from '@mui/icons-material';
+
+const statusColors = {
+  'PENDING': 'warning',
+  'IN_PROGRESS': 'info',
+  'COMPLETED': 'success',
+  'CANCELLED': 'error'
+};
+
 const VisitsTable = ({ visits, onRowClick }) => {
   if (visits.length === 0) {
     return (
@@ -38,7 +64,7 @@ const VisitsTable = ({ visits, onRowClick }) => {
             <TableCell sx={{ fontWeight: 700 }}>Status</TableCell>
             <TableCell sx={{ fontWeight: 700 }}>Estimate</TableCell>
             <TableCell sx={{ fontWeight: 700 }}>Payment</TableCell>
-            <TableCell sx={{ fontWeight: 700 }} align="right">Time</TableCell>
+            <TableCell sx={{ fontWeight: 700 }} align="right">Actions</TableCell>
           </TableRow>
         </TableHead>
         <TableBody>
@@ -46,10 +72,9 @@ const VisitsTable = ({ visits, onRowClick }) => {
             <TableRow 
               key={visit.id} 
               hover 
-              onClick={() => onRowClick(visit.id)} 
               sx={{ cursor: 'pointer', '&:last-child td, &:last-child th': { border: 0 } }}
             >
-              <TableCell>
+              <TableCell onClick={() => onRowClick(visit.id)}>
                 <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>
                   {visit.vehicle.reg_no}
                 </Typography>
@@ -57,8 +82,8 @@ const VisitsTable = ({ visits, onRowClick }) => {
                   {visit.vehicle.make} {visit.vehicle.model}
                 </Typography>
               </TableCell>
-              <TableCell>{visit.customer.name}</TableCell>
-              <TableCell>
+              <TableCell onClick={() => onRowClick(visit.id)}>{visit.customer.name}</TableCell>
+              <TableCell onClick={() => onRowClick(visit.id)}>
                 <Chip 
                   label={visit.status} 
                   size="small" 
@@ -67,12 +92,12 @@ const VisitsTable = ({ visits, onRowClick }) => {
                   sx={{ fontWeight: 600, fontSize: '0.65rem' }}
                 />
               </TableCell>
-              <TableCell>
+              <TableCell onClick={() => onRowClick(visit.id)}>
                 <Typography variant="body2" sx={{ fontWeight: 600 }}>
                   ${visit.grand_total.toLocaleString()}
                 </Typography>
               </TableCell>
-              <TableCell>
+              <TableCell onClick={() => onRowClick(visit.id)}>
                 <Chip 
                   label={visit.payment_status} 
                   size="small" 
@@ -82,9 +107,19 @@ const VisitsTable = ({ visits, onRowClick }) => {
                 />
               </TableCell>
               <TableCell align="right">
-                <Typography variant="caption">
-                  {new Date(visit.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                </Typography>
+                <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1 }}>
+                  <Tooltip title="New Visit for Customer">
+                    <IconButton size="small" color="primary" onClick={(e) => {
+                      e.stopPropagation();
+                      // This would trigger the new visit modal with pre-filled customer/vehicle data
+                    }}>
+                      <AddVisitIcon fontSize="small" />
+                    </IconButton>
+                  </Tooltip>
+                  <IconButton size="small" onClick={() => onRowClick(visit.id)}>
+                    <ViewIcon fontSize="small" />
+                  </IconButton>
+                </Box>
               </TableCell>
             </TableRow>
           ))}
