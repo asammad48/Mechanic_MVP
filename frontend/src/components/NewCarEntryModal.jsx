@@ -23,14 +23,36 @@ const NewCarEntryModal = ({ open, handleClose, onVisitCreated }) => {
     customerName: '',
     customerPhone: '',
     complaint: '',
+    mileage: '',
   });
+
+  const [errors, setErrors] = useState({});
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
+    if (errors[e.target.name]) {
+      setErrors({ ...errors, [e.target.name]: '' });
+    }
+  };
+
+  const validate = () => {
+    const newErrors = {};
+    if (!formData.reg_no) newErrors.reg_no = 'Registration Number is required';
+    if (!formData.make) newErrors.make = 'Make is required';
+    if (!formData.model) newErrors.model = 'Model is required';
+    if (!formData.year) newErrors.year = 'Year is required';
+    if (!formData.mileage) newErrors.mileage = 'Mileage is required';
+    if (!formData.complaint) newErrors.complaint = 'Complaint is required';
+    if (!formData.customerName && !formData.customerPhone) {
+      newErrors.customer = 'Either Customer Name or Phone is required';
+    }
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!validate()) return;
     try {
       // First, create or find the customer and vehicle
       let customer;
@@ -39,13 +61,13 @@ const NewCarEntryModal = ({ open, handleClose, onVisitCreated }) => {
       try {
         // Send everything in one request to the new transactional endpoint
         const { data: result } = await api.post('/customers', {
-          name: formData.customerName,
-          phone: formData.customerPhone,
+          name: formData.customerName || 'Walk-in Customer',
+          phone: formData.customerPhone || '0000000000',
           vehicle: {
             regNo: formData.reg_no,
             make: formData.make,
             model: formData.model,
-            year: formData.year
+            year: parseInt(formData.year)
           }
         });
         customer = result.customer;
@@ -60,6 +82,7 @@ const NewCarEntryModal = ({ open, handleClose, onVisitCreated }) => {
         vehicle_id: vehicle.id,
         customer_id: customer.id,
         complaint: formData.complaint,
+        mileage: parseInt(formData.mileage),
       });
 
       onVisitCreated(newVisit);
@@ -78,25 +101,28 @@ const NewCarEntryModal = ({ open, handleClose, onVisitCreated }) => {
         <Box component="form" onSubmit={handleSubmit} sx={{ mt: 2 }}>
           <Grid container spacing={2}>
             <Grid item xs={6}>
-              <TextField name="reg_no" label="Registration Number" fullWidth required onChange={handleChange} />
+              <TextField name="reg_no" label="Registration Number" fullWidth required error={!!errors.reg_no} helperText={errors.reg_no} onChange={handleChange} />
             </Grid>
             <Grid item xs={6}>
-              <TextField name="make" label="Make" fullWidth required onChange={handleChange} />
+              <TextField name="make" label="Make" fullWidth required error={!!errors.make} helperText={errors.make} onChange={handleChange} />
             </Grid>
             <Grid item xs={6}>
-              <TextField name="model" label="Model" fullWidth required onChange={handleChange} />
+              <TextField name="model" label="Model" fullWidth required error={!!errors.model} helperText={errors.model} onChange={handleChange} />
             </Grid>
             <Grid item xs={6}>
-              <TextField name="year" label="Year" type="number" fullWidth required onChange={handleChange} />
+              <TextField name="year" label="Year" type="number" fullWidth required error={!!errors.year} helperText={errors.year} onChange={handleChange} />
             </Grid>
             <Grid item xs={6}>
-              <TextField name="customerName" label="Customer Name" fullWidth required onChange={handleChange} />
+              <TextField name="mileage" label="Mileage" type="number" fullWidth required error={!!errors.mileage} helperText={errors.mileage} onChange={handleChange} />
             </Grid>
             <Grid item xs={6}>
-              <TextField name="customerPhone" label="Customer Phone" fullWidth required onChange={handleChange} />
+              <TextField name="customerName" label="Customer Name" fullWidth error={!!errors.customer} helperText={errors.customer} onChange={handleChange} />
             </Grid>
             <Grid item xs={12}>
-              <TextField name="complaint" label="Complaint/Issue" fullWidth required multiline rows={3} onChange={handleChange} />
+              <TextField name="customerPhone" label="Customer Phone" fullWidth error={!!errors.customer} helperText={errors.customer} onChange={handleChange} />
+            </Grid>
+            <Grid item xs={12}>
+              <TextField name="complaint" label="Complaint/Issue" fullWidth required multiline rows={3} error={!!errors.complaint} helperText={errors.complaint} onChange={handleChange} />
             </Grid>
           </Grid>
           <Button type="submit" variant="contained" sx={{ mt: 2 }}>
