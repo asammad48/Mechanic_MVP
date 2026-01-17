@@ -35,6 +35,7 @@ const DashboardPage = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedVisitId, setSelectedVisitId] = useState(null);
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
+  const [prefilledData, setPrefilledData] = useState(null);
 
   const fetchVisits = async () => {
     try {
@@ -49,8 +50,14 @@ const DashboardPage = () => {
     fetchVisits();
   }, []);
 
-  const handleOpenModal = () => setIsModalOpen(true);
-  const handleCloseModal = () => setIsModalOpen(false);
+  const handleOpenModal = (data = null) => {
+    setPrefilledData(data);
+    setIsModalOpen(true);
+  };
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+    setPrefilledData(null);
+  };
 
   const handleVisitCreated = (newVisit) => {
     setVisits([newVisit, ...visits]);
@@ -143,6 +150,7 @@ const DashboardPage = () => {
           open={isModalOpen}
           handleClose={handleCloseModal}
           onVisitCreated={handleVisitCreated}
+          prefilledData={prefilledData}
         />
 
         <VisitDetailsModal
@@ -163,7 +171,7 @@ const DashboardPage = () => {
                 <Typography variant="h6">Today's Visits</Typography>
               </Box>
               <Box sx={{ p: 0 }}>
-                <VisitsTable visits={visits} onRowClick={handleRowClick} />
+                <VisitsTable visits={visits} onRowClick={handleRowClick} onNewVisitClick={handleOpenModal} />
               </Box>
             </Paper>
           </Grid>

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Modal, Box, Typography, TextField, Button, Grid } from '@mui/material';
 import api from '../services/api';
 
@@ -14,7 +14,7 @@ const style = {
   p: 4,
 };
 
-const NewCarEntryModal = ({ open, handleClose, onVisitCreated }) => {
+const NewCarEntryModal = ({ open, handleClose, onVisitCreated, prefilledData }) => {
   const [formData, setFormData] = useState({
     reg_no: '',
     make: '',
@@ -25,6 +25,28 @@ const NewCarEntryModal = ({ open, handleClose, onVisitCreated }) => {
     complaint: '',
     mileage: '',
   });
+
+  useEffect(() => {
+    if (open && prefilledData) {
+      setFormData(prev => ({
+        ...prev,
+        ...prefilledData,
+        complaint: '', // Usually new visit needs new complaint
+        mileage: '',   // Usually needs updated mileage
+      }));
+    } else if (open && !prefilledData) {
+      setFormData({
+        reg_no: '',
+        make: '',
+        model: '',
+        year: '',
+        customerName: '',
+        customerPhone: '',
+        complaint: '',
+        mileage: '',
+      });
+    }
+  }, [open, prefilledData]);
 
   const [errors, setErrors] = useState({});
 

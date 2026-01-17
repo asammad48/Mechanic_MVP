@@ -25,7 +25,7 @@ const statusColors = {
   'CANCELLED': 'error'
 };
 
-const VisitsTable = ({ visits, onRowClick }) => {
+const VisitsTable = ({ visits, onRowClick, onNewVisitClick }) => {
   if (visits.length === 0) {
     return (
       <Box sx={{ p: 4, textAlign: 'center' }}>
@@ -91,7 +91,14 @@ const VisitsTable = ({ visits, onRowClick }) => {
                   <Tooltip title="New Visit for Customer">
                     <IconButton size="small" color="primary" onClick={(e) => {
                       e.stopPropagation();
-                      // This would trigger the new visit modal with pre-filled customer/vehicle data
+                      onNewVisitClick({
+                        reg_no: visit.vehicle.regNo,
+                        make: visit.vehicle.make,
+                        model: visit.vehicle.model,
+                        year: visit.vehicle.year,
+                        customerName: visit.customer.name,
+                        customerPhone: visit.customer.phone,
+                      });
                     }}>
                       <AddVisitIcon fontSize="small" />
                     </IconButton>
