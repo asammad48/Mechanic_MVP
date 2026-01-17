@@ -4,7 +4,7 @@ import { z } from 'zod';
 
 const visitSchema = z.object({
   vehicleId: z.string().optional(),
-  regNo: z.string().min(1, "Vehicle Registration Number is required"),
+  regNo: z.string().optional(),
   customerId: z.string().optional(),
   customerName: z.string().optional(),
   customerPhone: z.string().optional(),
@@ -13,6 +13,9 @@ const visitSchema = z.object({
   priority: z.string().optional(),
   expectedDelivery: z.string().optional(),
   assignedMechanicId: z.string().optional(),
+}).refine(data => data.regNo || data.vehicleId, {
+  message: "Either vehicle registration number or vehicle ID must be provided",
+  path: ["regNo"]
 }).refine(data => data.customerName || data.customerPhone || data.customerId, {
   message: "Either customer details or customer ID must be provided",
   path: ["customerName"]
@@ -179,6 +182,7 @@ export const createVisit = async (req: Request, res: Response) => {
       customerName, 
       customerPhone, 
       customerId: existingCustomerId,
+      vehicleId: existingVehicleId,
       priority, 
       expectedDelivery, 
       assignedMechanicId 
@@ -206,27 +210,40 @@ export const createVisit = async (req: Request, res: Response) => {
     }
 
     // 2. Handle Vehicle
-    const vehicle = await prisma.vehicle.upsert({
-      where: {
-        regNo_branchId: {
+    let vehicle;
+    if (existingVehicleId) {
+      vehicle = await prisma.vehicle.update({
+        where: { id: existingVehicleId },
+        data: {
+          mileage,
+          customerId
+        }
+      });
+    } else if (regNo) {
+      vehicle = await prisma.vehicle.upsert({
+        where: {
+          regNo_branchId: {
+            regNo,
+            branchId
+          }
+        },
+        update: {
+          mileage,
+          customerId
+        },
+        create: {
           regNo,
+          make: 'Unknown',
+          model: 'Unknown',
+          year: new Date().getFullYear(),
+          mileage,
+          customerId,
           branchId
         }
-      },
-      update: {
-        mileage,
-        customerId
-      },
-      create: {
-        regNo,
-        make: 'Unknown',
-        model: 'Unknown',
-        year: new Date().getFullYear(),
-        mileage,
-        customerId,
-        branchId
-      }
-    });
+      });
+    } else {
+      return res.status(400).json({ message: 'Vehicle registration or ID is required' });
+    }
 
     const visit = await prisma.visit.create({
       data: {
