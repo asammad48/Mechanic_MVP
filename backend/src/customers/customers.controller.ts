@@ -25,6 +25,13 @@ export const createCustomer = async (req: Request, res: Response) => {
   try {
     const { name, phone, address, vehicle } = req.body;
     
+    const branch = await prisma.branch.findFirst();
+    const branchId = req.user?.branchId || branch?.id;
+
+    if (!branchId) {
+      return res.status(400).json({ message: 'Branch ID is missing and no default branch found.' });
+    }
+    
     // Use transaction to ensure both customer and vehicle are created
     const result = await prisma.$transaction(async (prisma) => {
       const customer = await prisma.customer.create({
@@ -32,7 +39,7 @@ export const createCustomer = async (req: Request, res: Response) => {
           name, 
           phone, 
           address, 
-          branchId: req.user!.branchId! 
+          branchId: branchId
         },
       });
 
@@ -48,7 +55,7 @@ export const createCustomer = async (req: Request, res: Response) => {
             vin: vehicle.vin,
             mileage: vehicle.mileage ? parseInt(vehicle.mileage) : null,
             customerId: customer.id,
-            branchId: req.user!.branchId!
+            branchId: branchId
           }
         });
       }
