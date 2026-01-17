@@ -1,0 +1,179 @@
+We already have Jules Mechanic MVP working with: branches, visits/job cards, labor items, part items, payments, notes, analytics, and role-based UI.
+
+Now implement the following REQUIRED additions end-to-end (Database + Backend + Frontend), following the SAME existing project structure and coding style. Do NOT refactor unrelated code. Do NOT change folder structure. Keep /backend and /frontend separate.
+
+========================
+NEW BUSINESS REQUIREMENTS (VISIT)
+========================
+A) Labor must support PER HOUR pricing
+- Each labor item must store:
+  - title (required)
+  - hours (required, decimal allowed like 1.5)
+  - ratePerHour (required)
+  - subtotal (computed server-side = hours * ratePerHour)
+
+B) Spare parts used in the visit
+- Each part item must store:
+  - name (required)
+  - qty (required)
+  - unitPrice (required)
+  - subtotal (computed server-side = qty * unitPrice)
+
+C) “Outside Workshop Work” items (third-party / outsourced)
+Sometimes work is done outside our workshop (e.g., denting/painting, electrical, AC specialist).
+Create a separate list of outside-work items for a visit:
+- vendorName (required)
+- workDescription (required)
+- cost (required)
+- notes (optional)
+Subtotal computed server-side (sum of outside work costs)
+
+D) Mandatory fields in EACH visit (must enforce in backend validation)
+When creating a new visit, the following must be required:
+- vehicle reg no (required)
+- customer phone OR customer name (at least one required)
+- complaint/issue description (required)
+- mileage (required)
+- createdBy user (already exists)
+- branch scope (already exists)
+If missing -> return validation error with clear message.
+
+========================
+DATABASE (PRISMA/POSTGRES)
+========================
+1) Add fields if missing:
+- Visit.mileage (required, integer)
+- Ensure Visit.complaint is required
+
+2) LaborItem
+- Ensure fields exist:
+  - title String
+  - hours Decimal/Float (prefer Decimal for precision)
+  - ratePerHour Decimal
+  - subtotal Decimal
+
+3) PartItem
+- Ensure fields exist:
+  - name String
+  - qty Int
+  - unitPrice Decimal
+  - subtotal Decimal
+
+4) Create new model OutsideWorkItem:
+- id
+- visitId (FK)
+- vendorName
+- workDescription
+- cost (Decimal)
+- notes (optional)
+- createdAt
+Relation:
+Visit has many OutsideWorkItems
+
+5) Update Visit totals
+Visit must store computed totals server-side (single source of truth):
+- subtotalLabor
+- subtotalParts
+- subtotalOutside
+- discountAmount
+- taxAmount
+- grandTotal
+- paidAmount
+- dueAmount
+
+All totals must be updated whenever:
+- labor items change
+- part items change
+- outside work items change
+- payments change
+
+Run migrations + regenerate Prisma client.
+
+========================
+BACKEND (NODE/EXPRESS)
+========================
+1) Validation
+- Update Zod schemas:
+  - POST /visits must enforce mandatory fields
+  - POST labor item must require hours and ratePerHour
+  - POST part item must require qty and unitPrice
+  - POST outside-work item must require vendorName, workDescription, cost
+
+2) Endpoints (add missing)
+Outside work endpoints:
+- POST /visits/:id/outside-work-items
+- DELETE /outside-work-items/:id
+- GET /visits/:id (must include outside work items in response)
+
+3) Server-side calculations (must be correct and consistent)
+- Recompute visit totals after any add/delete:
+  - subtotalLabor = sum(labor.subtotal)
+  - subtotalParts = sum(parts.subtotal)
+  - subtotalOutside = sum(outside.cost)
+  - discount/tax logic unchanged
+  - grandTotal = subtotalLabor + subtotalParts + subtotalOutside - discount + tax
+  - paidAmount = sum(payments not voided)
+  - dueAmount = grandTotal - paidAmount (min 0)
+Do NOT trust frontend for subtotal/grand total. Backend must compute.
+
+4) Role permissions (keep consistent)
+- Receptionist: can create visit and add labor/parts/outside items? (If existing rules allow, keep same. If not, restrict to Manager/Admin)
+- Mechanic: can add labor + notes; parts and outside work can be Manager/Admin only (choose simplest sensible rule and document in code)
+
+5) Response payload updates
+- Visits list and visit detail must include:
+  - totals
+  - payment status
+  - outside work summary (subtotalOutside)
+
+========================
+FRONTEND (REACT)
+========================
+Update Visit Details Panel UI to support:
+1) Labor section
+- Add labor item form with:
+  - title, hours, rate/hour
+- Show list of labor items with computed subtotal
+
+2) Parts section
+- Add part item form with:
+  - name, qty, unit price
+- Show list with subtotal
+
+3) Outside Workshop Work section (NEW)
+- Add outsourced item form:
+  - vendorName, workDescription, cost, notes
+- Show list and subtotalOutside
+
+4) Totals panel
+- Show subtotalLabor, subtotalParts, subtotalOutside, grandTotal, paidAmount, dueAmount
+- Ensure frontend displays values from backend response (do not compute totals client-side)
+
+5) Mandatory visit fields
+- New Car Entry Modal must require:
+  - complaint, mileage, reg no, and customer phone or name
+- Display validation errors clearly
+
+========================
+TESTING (REQUIRED)
+========================
+Write automated tests to verify full flow works end-to-end (backend integration tests preferred):
+Flow:
+1) Create visit with required fields (should succeed)
+2) Try create visit without complaint or mileage (should fail)
+3) Add labor item with hours/rate (totals update)
+4) Add part item (totals update)
+5) Add outside-work item (totals update + subtotalOutside)
+6) Add payment (dueAmount updates)
+7) Fetch visit detail and verify all items and totals are correct
+
+Do NOT skip tests. Ensure tests run and pass.
+
+========================
+DELIVERABLES
+========================
+- Updated Prisma schema + migration
+- Updated backend endpoints + validation + recalculation logic
+- Updated frontend UI for labor/parts/outside work + totals
+- Passing automated tests for the full flow
+- Keep the existing structure and style; minimal unrelated changes
