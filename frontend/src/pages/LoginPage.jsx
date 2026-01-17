@@ -167,17 +167,7 @@ const LoginPage = () => {
               </Button>
             </Stack>
 
-            <Box sx={{ mt: 4, textAlign: 'center' }}>
-              <Link 
-                component="button"
-                variant="body2" 
-                underline="hover" 
-                onClick={() => navigate('/signup')}
-                sx={{ fontWeight: 600 }}
-              >
-                Don't have an account? Sign Up
-              </Link>
-            </Box>
+            {/* Removed signup link */}
           </Box>
         </Paper>
         <Typography variant="body2" color="text.secondary" align="center" sx={{ mt: 4 }}>
