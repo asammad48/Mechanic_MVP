@@ -5,7 +5,7 @@ import { z } from 'zod';
 
 const userSchema = z.object({
   name: z.string().min(1),
-  email: z.string().email(),
+  email: z.string(),
   password: z.string().min(6),
   roleId: z.string(),
 });
