@@ -138,28 +138,28 @@ const NewCarEntryModal = ({ open, handleClose, onVisitCreated, prefilledData }) 
         <Box component="form" onSubmit={handleSubmit} sx={{ mt: 2 }}>
           <Grid container spacing={2}>
             <Grid item xs={6}>
-              <TextField name="reg_no" label="Registration Number" fullWidth required error={!!errors.reg_no} helperText={errors.reg_no} onChange={handleChange} />
+              <TextField name="reg_no" label="Registration Number" fullWidth required error={!!errors.reg_no} helperText={errors.reg_no} value={formData.reg_no} onChange={handleChange} />
             </Grid>
             <Grid item xs={6}>
-              <TextField name="make" label="Make" fullWidth required error={!!errors.make} helperText={errors.make} onChange={handleChange} />
+              <TextField name="make" label="Make" fullWidth required error={!!errors.make} helperText={errors.make} value={formData.make} onChange={handleChange} />
             </Grid>
             <Grid item xs={6}>
-              <TextField name="model" label="Model" fullWidth required error={!!errors.model} helperText={errors.model} onChange={handleChange} />
+              <TextField name="model" label="Model" fullWidth required error={!!errors.model} helperText={errors.model} value={formData.model} onChange={handleChange} />
             </Grid>
             <Grid item xs={6}>
-              <TextField name="year" label="Year" type="number" fullWidth required error={!!errors.year} helperText={errors.year} onChange={handleChange} />
+              <TextField name="year" label="Year" type="number" fullWidth required error={!!errors.year} helperText={errors.year} value={formData.year} onChange={handleChange} />
             </Grid>
             <Grid item xs={6}>
-              <TextField name="mileage" label="Mileage" type="number" fullWidth required error={!!errors.mileage} helperText={errors.mileage} onChange={handleChange} />
+              <TextField name="mileage" label="Mileage" type="number" fullWidth required error={!!errors.mileage} helperText={errors.mileage} value={formData.mileage} onChange={handleChange} />
             </Grid>
             <Grid item xs={6}>
-              <TextField name="customerName" label="Customer Name" fullWidth error={!!errors.customer} helperText={errors.customer} onChange={handleChange} />
+              <TextField name="customerName" label="Customer Name" fullWidth error={!!errors.customer} helperText={errors.customer} value={formData.customerName} onChange={handleChange} />
             </Grid>
             <Grid item xs={12}>
-              <TextField name="customerPhone" label="Customer Phone" fullWidth error={!!errors.customer} helperText={errors.customer} onChange={handleChange} />
+              <TextField name="customerPhone" label="Customer Phone" fullWidth error={!!errors.customer} helperText={errors.customer} value={formData.customerPhone} onChange={handleChange} />
             </Grid>
             <Grid item xs={12}>
-              <TextField name="complaint" label="Complaint/Issue" fullWidth required multiline rows={3} error={!!errors.complaint} helperText={errors.complaint} onChange={handleChange} />
+              <TextField name="complaint" label="Complaint/Issue" fullWidth required multiline rows={3} error={!!errors.complaint} helperText={errors.complaint} value={formData.complaint} onChange={handleChange} />
             </Grid>
           </Grid>
           <Button type="submit" variant="contained" sx={{ mt: 2 }}>
