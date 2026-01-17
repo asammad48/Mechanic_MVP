@@ -14,12 +14,20 @@ export const login = async (req: Request, res: Response) => {
   try {
     const { email, password } = loginSchema.parse(req.body);
 
+    console.log(`Login attempt for email: ${email}`);
     const user = await prisma.user.findUnique({
       where: { email },
       include: { role: true },
     });
 
-    if (!user || !(await bcrypt.compare(password, user.password_hash))) {
+    if (!user) {
+      console.log(`Login failed: User not found for email ${email}`);
+      return res.status(401).json({ message: 'Invalid credentials.' });
+    }
+
+    const isPasswordValid = await bcrypt.compare(password, user.password_hash);
+    if (!isPasswordValid) {
+      console.log(`Login failed: Invalid password for email ${email}`);
       return res.status(401).json({ message: 'Invalid credentials.' });
     }
 
