@@ -35,7 +35,7 @@ const AnalyticsSnapshot = () => {
   }, []);
 
   const StatCard = ({ title, data, icon: Icon, color }) => (
-    <Grid item xs={12} sm={4}>
+    <Grid item xs={12} md={4}>
       <Paper 
         elevation={0}
         sx={{ 
