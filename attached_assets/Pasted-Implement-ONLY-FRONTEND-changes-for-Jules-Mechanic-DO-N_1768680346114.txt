@@ -1,0 +1,140 @@
+Implement ONLY FRONTEND changes for Jules Mechanic.
+DO NOT touch backend.
+DO NOT touch database or Prisma.
+DO NOT refactor API contracts.
+Assume backend APIs already exist and return correct data.
+
+Tech stack:
+- React + Vite
+- Existing component structure must be preserved
+- Follow current UI style and layout conventions
+
+========================
+FRONTEND SCOPE (VISIT DETAILS)
+========================
+
+We need to extend the Visit Details UI to support:
+1) Labor (per hour)
+2) Spare parts
+3) Outside workshop (outsourced) work
+4) Mandatory visit field enforcement (UI-level)
+
+========================
+1) LABOR SECTION (PER HOUR)
+========================
+In the Visit Details panel:
+
+- Add a “Labor” section
+- Add a form with fields:
+  - Title (text, required)
+  - Hours (number, decimal allowed e.g. 1.5, required)
+  - Rate per hour (number, required)
+
+Behavior:
+- On submit → call existing backend endpoint
+- Do NOT calculate totals on frontend
+- Display returned labor items in a table/list:
+  - Title
+  - Hours
+  - Rate/hour
+  - Subtotal (from backend)
+- Show a “Labor Subtotal” value (from backend visit totals)
+
+========================
+2) SPARE PARTS SECTION
+========================
+In the Visit Details panel:
+
+- Add a “Spare Parts” section
+- Add a form with fields:
+  - Part name (required)
+  - Quantity (required)
+  - Unit price (required)
+
+Behavior:
+- Submit → backend
+- Display parts list:
+  - Name
+  - Qty
+  - Unit price
+  - Subtotal (from backend)
+- Show “Parts Subtotal” (from backend)
+
+========================
+3) OUTSIDE WORKSHOP WORK (NEW UI SECTION)
+========================
+Add a NEW section titled:
+“Outside Workshop / Outsourced Work”
+
+Form fields:
+- Vendor name (required)
+- Work description (required)
+- Cost (required)
+- Notes (optional)
+
+Behavior:
+- Submit → backend
+- Display list of outside work items:
+  - Vendor
+  - Description
+  - Cost
+- Show “Outside Work Subtotal” (from backend)
+
+========================
+4) TOTALS PANEL (READ-ONLY)
+========================
+Add a clear totals summary panel in Visit Details:
+
+Display (read-only):
+- Subtotal Labor
+- Subtotal Parts
+- Subtotal Outside Work
+- Grand Total
+- Paid Amount
+- Due Amount
+
+Rules:
+- Values must come from backend response
+- Frontend must NOT compute totals
+- Update UI after any add/delete action
+
+========================
+5) MANDATORY FIELD ENFORCEMENT (UI ONLY)
+========================
+In “New Car Entry” modal:
+- Mark required fields visually:
+  - Complaint
+  - Mileage
+  - Registration number
+  - Customer phone OR name
+- Disable submit button if required fields missing
+- Display backend validation errors clearly if returned
+
+========================
+6) UX / UI RULES
+========================
+- Keep layout consistent with existing dashboard
+- Use cards/sections with clear headings
+- Use tables or stacked lists (mobile-friendly)
+- Show proper empty states:
+  - “No labor added yet”
+  - “No parts added”
+  - “No outside work recorded”
+
+========================
+TESTING / VERIFICATION
+========================
+- Do NOT write automated tests
+- Manually verify in browser:
+  - Forms submit correctly
+  - Lists update after actions
+  - Totals update when backend responds
+  - No console errors
+
+========================
+DELIVERABLE
+========================
+- Updated React components only
+- No backend or DB changes
+- Build runs without errors
+- Clean, usable Visit Details UI
