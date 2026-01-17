@@ -4,8 +4,10 @@ import { z } from 'zod';
 
 const visitSchema = z.object({
   vehicleId: z.string().optional(),
+  vehicle_id: z.string().optional(),
   regNo: z.string().optional(),
   customerId: z.string().optional(),
+  customer_id: z.string().optional(),
   customerName: z.string().optional(),
   customerPhone: z.string().optional(),
   complaint: z.string().min(1, "Complaint is required"),
@@ -13,10 +15,10 @@ const visitSchema = z.object({
   priority: z.string().optional(),
   expectedDelivery: z.string().optional(),
   assignedMechanicId: z.string().optional(),
-}).refine(data => data.regNo || data.vehicleId, {
+}).refine(data => data.regNo || data.vehicleId || data.vehicle_id, {
   message: "Either vehicle registration number or vehicle ID must be provided",
   path: ["regNo"]
-}).refine(data => data.customerName || data.customerPhone || data.customerId, {
+}).refine(data => data.customerName || data.customerPhone || data.customerId || data.customer_id, {
   message: "Either customer details or customer ID must be provided",
   path: ["customerName"]
 });
@@ -182,14 +184,16 @@ export const createVisit = async (req: Request, res: Response) => {
       customerName, 
       customerPhone, 
       customerId: existingCustomerId,
-      vehicleId: existingVehicleId,
+      customer_id: snakeCustomerId,
+      vehicle_id: existingVehicleId,
+      vehicleId: camelVehicleId,
       priority, 
       expectedDelivery, 
       assignedMechanicId 
     } = visitSchema.parse(req.body);
     
     // 1. Handle Customer
-    let customerId = existingCustomerId;
+    let customerId = existingCustomerId || snakeCustomerId;
     if (!customerId) {
       // Find or create customer by phone in this branch
       const customer = await prisma.customer.upsert({
@@ -211,9 +215,10 @@ export const createVisit = async (req: Request, res: Response) => {
 
     // 2. Handle Vehicle
     let vehicle;
-    if (existingVehicleId) {
+    const vehicleIdToUse = existingVehicleId || camelVehicleId;
+    if (vehicleIdToUse) {
       vehicle = await prisma.vehicle.update({
-        where: { id: existingVehicleId },
+        where: { id: vehicleIdToUse },
         data: {
           mileage,
           customerId
