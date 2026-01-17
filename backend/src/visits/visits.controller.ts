@@ -250,6 +250,22 @@ export const createVisit = async (req: Request, res: Response) => {
       return res.status(400).json({ message: 'Vehicle registration or ID is required' });
     }
 
+    // Check for active visits for this vehicle
+    const activeVisit = await prisma.visit.findFirst({
+      where: {
+        vehicleId: vehicle.id,
+        status: {
+          notIn: ['DELIVERED', 'CANCELLED']
+        }
+      }
+    });
+
+    if (activeVisit) {
+      return res.status(400).json({ 
+        message: 'Cannot create a new visit. This vehicle already has an active visit in progress (Status: ' + activeVisit.status + ').' 
+      });
+    }
+
     const visit = await prisma.visit.create({
       data: {
         vehicleId: vehicle.id,

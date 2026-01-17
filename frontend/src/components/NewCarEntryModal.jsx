@@ -50,9 +50,12 @@ const NewCarEntryModal = ({ open, handleClose, onVisitCreated }) => {
     return Object.keys(newErrors).length === 0;
   };
 
+  const [apiError, setApiError] = useState('');
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!validate()) return;
+    setApiError('');
     try {
       // First, create or find the customer and vehicle
       let customer;
@@ -89,6 +92,11 @@ const NewCarEntryModal = ({ open, handleClose, onVisitCreated }) => {
       handleClose();
     } catch (error) {
       console.error('Failed to create new car entry:', error);
+      if (error.response && error.response.data && error.response.data.message) {
+        setApiError(error.response.data.message);
+      } else {
+        setApiError('An unexpected error occurred. Please try again.');
+      }
     }
   };
 
@@ -98,6 +106,13 @@ const NewCarEntryModal = ({ open, handleClose, onVisitCreated }) => {
         <Typography variant="h6" component="h2">
           New Car Entry
         </Typography>
+
+        {apiError && (
+          <Typography color="error" sx={{ mt: 2, p: 1, border: '1px solid', borderColor: 'error.main', borderRadius: 1, bgcolor: 'error.light', color: 'error.contrastText' }}>
+            {apiError}
+          </Typography>
+        )}
+
         <Box component="form" onSubmit={handleSubmit} sx={{ mt: 2 }}>
           <Grid container spacing={2}>
             <Grid item xs={6}>
