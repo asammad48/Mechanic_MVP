@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { useAuth } from '../contexts/AuthContext';
 import { 
   Container, 
   TextField, 
@@ -10,36 +9,46 @@ import {
   Link, 
   InputAdornment, 
   IconButton,
-  Divider,
-  Stack
+  Stack,
+  MenuItem
 } from '@mui/material';
 import { 
   Email as EmailIcon, 
   Lock as LockIcon, 
+  Person as PersonIcon,
   Visibility, 
   VisibilityOff,
-  DirectionsCar as CarIcon
+  DirectionsCar as CarIcon,
+  Business as BusinessIcon
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
+import api from '../services/api';
 
-const LoginPage = () => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+const SignupPage = () => {
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    password: '',
+    role: 'RECEPTIONIST' // Default role for signup, normally would be restricted
+  });
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const { login } = useAuth();
   const navigate = useNavigate();
+
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
     setLoading(true);
     try {
-      await login(email, password);
-      navigate('/');
+      await api.post('/auth/register', formData);
+      navigate('/login');
     } catch (err) {
-      setError('Invalid email or password. Please try again.');
+      setError(err.response?.data?.message || 'Failed to create account. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -73,22 +82,22 @@ const LoginPage = () => {
               sx={{ 
                 width: 64, 
                 height: 64, 
-                bgcolor: 'primary.main', 
+                bgcolor: 'secondary.main', 
                 borderRadius: 2, 
                 display: 'flex', 
                 alignItems: 'center', 
                 justifyContent: 'center',
                 mb: 2,
-                boxShadow: '0 8px 16px rgba(25, 118, 210, 0.2)'
+                boxShadow: '0 8px 16px rgba(156, 39, 176, 0.2)'
               }}
             >
               <CarIcon sx={{ fontSize: 36, color: 'white' }} />
             </Box>
             <Typography variant="h4" sx={{ fontWeight: 800, letterSpacing: -1, color: 'text.primary' }}>
-              Welcome Back
+              Join Jules Mechanic
             </Typography>
             <Typography variant="body1" color="text.secondary" sx={{ mt: 1 }}>
-              Log in to manage your workshop
+              Start managing your workshop efficiently
             </Typography>
           </Box>
 
@@ -97,13 +106,30 @@ const LoginPage = () => {
               <TextField
                 required
                 fullWidth
+                id="name"
+                label="Full Name"
+                name="name"
+                autoComplete="name"
+                autoFocus
+                value={formData.name}
+                onChange={handleChange}
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <PersonIcon color="action" fontSize="small" />
+                    </InputAdornment>
+                  ),
+                }}
+              />
+              <TextField
+                required
+                fullWidth
                 id="email"
                 label="Email Address"
                 name="email"
                 autoComplete="email"
-                autoFocus
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                value={formData.email}
+                onChange={handleChange}
                 InputProps={{
                   startAdornment: (
                     <InputAdornment position="start">
@@ -111,7 +137,6 @@ const LoginPage = () => {
                     </InputAdornment>
                   ),
                 }}
-                variant="outlined"
               />
               <TextField
                 required
@@ -120,9 +145,9 @@ const LoginPage = () => {
                 label="Password"
                 type={showPassword ? 'text' : 'password'}
                 id="password"
-                autoComplete="current-password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                autoComplete="new-password"
+                value={formData.password}
+                onChange={handleChange}
                 InputProps={{
                   startAdornment: (
                     <InputAdornment position="start">
@@ -132,7 +157,6 @@ const LoginPage = () => {
                   endAdornment: (
                     <InputAdornment position="end">
                       <IconButton
-                        aria-label="toggle password visibility"
                         onClick={() => setShowPassword(!showPassword)}
                         edge="end"
                         size="small"
@@ -142,7 +166,6 @@ const LoginPage = () => {
                     </InputAdornment>
                   ),
                 }}
-                variant="outlined"
               />
 
               {error && (
@@ -157,13 +180,14 @@ const LoginPage = () => {
                 variant="contained"
                 size="large"
                 disabled={loading}
+                color="secondary"
                 sx={{ 
                   py: 1.5, 
                   fontSize: '1rem',
-                  boxShadow: '0 4px 12px rgba(25, 118, 210, 0.2)'
+                  boxShadow: '0 4px 12px rgba(156, 39, 176, 0.2)'
                 }}
               >
-                {loading ? 'Signing in...' : 'Sign In'}
+                {loading ? 'Creating account...' : 'Create Account'}
               </Button>
             </Stack>
 
@@ -172,20 +196,17 @@ const LoginPage = () => {
                 component="button"
                 variant="body2" 
                 underline="hover" 
-                onClick={() => navigate('/signup')}
+                onClick={() => navigate('/login')}
                 sx={{ fontWeight: 600 }}
               >
-                Don't have an account? Sign Up
+                Already have an account? Sign In
               </Link>
             </Box>
           </Box>
         </Paper>
-        <Typography variant="body2" color="text.secondary" align="center" sx={{ mt: 4 }}>
-          © {new Date().getFullYear()} Jules Mechanic Workshop. All rights reserved.
-        </Typography>
       </Container>
     </Box>
   );
 };
 
-export default LoginPage;
+export default SignupPage;
