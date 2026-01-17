@@ -18,7 +18,8 @@ import {
   Add as AddIcon, 
   Logout as LogoutIcon, 
   DirectionsCar as CarIcon,
-  Person as PersonIcon 
+  Person as PersonIcon,
+  Download as DownloadIcon
 } from '@mui/icons-material';
 import { useAuth } from '../contexts/AuthContext';
 import api from '../services/api';
@@ -77,6 +78,22 @@ const DashboardPage = () => {
     setVisits(visits.map((v) => (v.id === updatedVisit.id ? updatedVisit : v)));
   };
 
+  const handleExport = async () => {
+    try {
+      const response = await api.get('/visits/export', { responseType: 'blob' });
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `visits_report_${new Date().toISOString().split('T')[0]}.xlsx`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+    } catch (error) {
+      console.error('Failed to export visits:', error);
+      alert('Failed to export report. Please try again.');
+    }
+  };
+
   return (
     <Box sx={{ flexGrow: 1, bgcolor: 'background.default', minHeight: '100vh' }}>
       <AppBar position="sticky" elevation={0} sx={{ borderBottom: '1px solid', borderColor: 'divider', bgcolor: 'background.paper', color: 'text.primary', width: '100%' }}>
@@ -128,22 +145,32 @@ const DashboardPage = () => {
       <Container maxWidth={false} sx={{ mt: 4, mb: 4, px: { xs: 2, sm: 4, md: 6 } }}>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
           <Typography variant="h4">Dashboard</Typography>
-          <Button 
-            variant="contained" 
-            onClick={handleOpenModal} 
-            startIcon={<AddIcon />}
-            size={isMobile ? "medium" : "large"}
-            sx={{ 
-              bgcolor: 'primary.main',
-              px: 3,
-              py: 1.2,
-              '&:hover': {
-                bgcolor: 'primary.dark',
-              }
-            }}
-          >
-            New Car Entry
-          </Button>
+          <Stack direction="row" spacing={2}>
+            <Button 
+              variant="outlined"
+              onClick={handleExport}
+              startIcon={<DownloadIcon />}
+              size={isMobile ? "medium" : "large"}
+            >
+              Export Report
+            </Button>
+            <Button 
+              variant="contained" 
+              onClick={handleOpenModal} 
+              startIcon={<AddIcon />}
+              size={isMobile ? "medium" : "large"}
+              sx={{ 
+                bgcolor: 'primary.main',
+                px: 3,
+                py: 1.2,
+                '&:hover': {
+                  bgcolor: 'primary.dark',
+                }
+              }}
+            >
+              New Car Entry
+            </Button>
+          </Stack>
         </Box>
 
         <NewCarEntryModal

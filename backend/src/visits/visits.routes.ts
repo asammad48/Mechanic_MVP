@@ -20,6 +20,7 @@ const router = Router();
 router.use(authenticate);
 
 router.get('/', authorize(['Receptionist', 'Manager', 'Owner/Admin', 'Mechanic']), getVisits);
+router.get('/export', authorize(['Manager', 'Owner/Admin']), exportVisits);
 router.get('/:id', authorize(['Receptionist', 'Manager', 'Owner/Admin', 'Mechanic']), getVisitById);
 router.post('/', authorize(['Receptionist', 'Manager', 'Owner/Admin']), createVisit);
 router.patch('/:id', authorize(['Manager', 'Owner/Admin', 'Mechanic']), updateVisit);
