@@ -53,8 +53,8 @@ const VisitDetailsPanel = ({ visitId, onUpdate }) => {
   const handleAddItem = async (type, data) => {
     setLoading(true);
     try {
-      const endpoint = type === 'labor' ? '/labor-items' : type === 'part' ? '/part-items' : '/outside-work-items';
-      await api.post(endpoint, { ...data, visitId });
+      const endpoint = type === 'labor' ? `/visits/${visitId}/labor-items` : type === 'part' ? `/visits/${visitId}/part-items` : `/visits/${visitId}/outside-work-items`;
+      await api.post(endpoint, data);
       await fetchVisit(); // Refresh visit to get updated items and totals
       
       // Reset relevant form
