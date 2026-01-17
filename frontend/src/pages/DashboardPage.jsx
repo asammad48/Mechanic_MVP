@@ -24,7 +24,7 @@ import { useAuth } from '../contexts/AuthContext';
 import api from '../services/api';
 import VisitsTable from '../components/VisitsTable';
 import NewCarEntryModal from '../components/NewCarEntryModal';
-import VisitDetailsPanel from '../components/VisitDetailsPanel';
+import VisitDetailsModal from '../components/VisitDetailsModal';
 import AnalyticsSnapshot from '../components/AnalyticsSnapshot';
 
 const DashboardPage = () => {
@@ -34,6 +34,7 @@ const DashboardPage = () => {
   const [visits, setVisits] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedVisitId, setSelectedVisitId] = useState(null);
+  const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
 
   const fetchVisits = async () => {
     try {
@@ -57,6 +58,12 @@ const DashboardPage = () => {
 
   const handleRowClick = (visitId) => {
     setSelectedVisitId(visitId);
+    setIsDetailsModalOpen(true);
+  };
+
+  const handleCloseDetailsModal = () => {
+    setIsDetailsModalOpen(false);
+    setSelectedVisitId(null);
   };
 
   const handleVisitUpdate = (updatedVisit) => {
@@ -138,12 +145,19 @@ const DashboardPage = () => {
           onVisitCreated={handleVisitCreated}
         />
 
+        <VisitDetailsModal
+          open={isDetailsModalOpen}
+          handleClose={handleCloseDetailsModal}
+          visitId={selectedVisitId}
+          onUpdate={handleVisitUpdate}
+        />
+
         <Box sx={{ mb: 4 }}>
           <AnalyticsSnapshot />
         </Box>
 
         <Grid container spacing={3}>
-          <Grid size={{ xs: 12, lg: 8 }}>
+          <Grid size={{ xs: 12 }}>
             <Paper sx={{ p: 0, overflow: 'hidden' }}>
               <Box sx={{ p: 2, borderBottom: '1px solid', borderColor: 'divider', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                 <Typography variant="h6">Today's Visits</Typography>
@@ -151,13 +165,6 @@ const DashboardPage = () => {
               <Box sx={{ p: 0 }}>
                 <VisitsTable visits={visits} onRowClick={handleRowClick} />
               </Box>
-            </Paper>
-          </Grid>
-
-          <Grid size={{ xs: 12, lg: 4 }}>
-            <Paper sx={{ p: 3, height: '100%' }}>
-              <Typography variant="h6" gutterBottom>Visit Details</Typography>
-              <VisitDetailsPanel visitId={selectedVisitId} onUpdate={handleVisitUpdate} />
             </Paper>
           </Grid>
         </Grid>
