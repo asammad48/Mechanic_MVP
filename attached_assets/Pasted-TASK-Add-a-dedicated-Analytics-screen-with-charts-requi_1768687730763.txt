@@ -1,0 +1,112 @@
+TASK: Add a dedicated Analytics screen with charts + required backend endpoints.
+
+Tech:
+- Frontend: React (existing UI library)
+- Backend: Node/Express + Prisma/Postgres
+- Keep existing structure; no refactors
+- Respect RBAC + branch scoping
+- Follow existing patterns for routes/controllers/services
+
+GOAL
+Create a new page: /analytics
+Show professional charts to analyze workshop performance across week/month/year and custom date range.
+
+========================
+BACKEND REQUIREMENTS
+========================
+
+1) Add/extend analytics endpoints (branch-scoped)
+All responses must be based on DELIVERED visits (revenue recognized only on delivered).
+Non-super users are restricted to their branch.
+Super admin can:
+- pass branchId to filter
+- or request allBranches=true to aggregate
+
+A) KPI Summary (already exists but verify + extend)
+GET /analytics/summary?range=week|month|year&branchId=&allBranches=
+Return:
+- totalVisits
+- totalRevenue
+- unpaidAmount
+- avgTicketSize (totalRevenue / deliveredVisits)
+- deliveredCount
+- inProgressCount
+
+B) Revenue Trend (time series)
+GET /analytics/revenue-trend?range=7d|30d|90d|12m&branchId=&allBranches=
+Return array:
+[
+  { date: "YYYY-MM-DD", revenue: number, visits: number, unpaid: number }
+]
+For 12m: return monthly buckets { month: "YYYY-MM", ... }
+
+C) Status Breakdown
+GET /analytics/status-breakdown?dateFrom=&dateTo=&branchId=&allBranches=
+Return:
+[
+  { status: "CREATED", count: n },
+  ...
+]
+
+D) Top Mechanics (optional but preferred)
+GET /analytics/top-mechanics?dateFrom=&dateTo=&branchId=&allBranches=
+Return:
+[
+  { mechanicId, mechanicName, deliveredCount, revenue, avgTicket }
+]
+
+2) Performance
+Add indexes if needed:
+- visits(branchId, createdAt)
+- visits(branchId, status)
+- visits(branchId, deliveredAt or updatedAt if deliveredAt not present)
+
+3) Correctness
+- Use timezone consistent bucketing (Asia/Karachi or configured TZ)
+- Avoid floating math; use decimal conversion safely
+
+========================
+FRONTEND REQUIREMENTS
+========================
+
+1) Create a new Analytics page (/analytics)
+It must have:
+- Filters bar at top:
+  - Date range (from/to)
+  - Branch selector for super admin (All branches + branches list)
+  - Quick range buttons (7d, 30d, 90d, 12m)
+- All charts update when filters change.
+
+2) Charts (use Recharts)
+A) Revenue Trend (Line/Area chart)
+- X: date
+- Y: revenue
+
+B) Visits Trend (Bar chart)
+- X: date
+- Y: visits
+
+C) Status Breakdown (Pie/Donut chart)
+
+D) Unpaid Trend (Line or Bar) OR show unpaid as overlay in revenue trend
+
+E) Top Mechanics (Bar chart)
+- mechanic vs revenue OR mechanic vs delivered count
+
+3) KPI cards row
+Show:
+- Total Revenue
+- Delivered Visits
+- Unpaid Amount
+- Avg Ticket Size
+
+4) UX rules
+- Handle empty states (show “No data for selected range”)
+- Loading skeletons
+- No crashing on null data
+
+DELIVERABLES
+- New backend endpoints + queries implemented
+- New Analytics page with 3–5 charts
+- RBAC + branch scoping respected
+- Clean UI consistent with dashboard

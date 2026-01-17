@@ -19,8 +19,10 @@ import {
   Logout as LogoutIcon, 
   DirectionsCar as CarIcon,
   Person as PersonIcon,
-  Download as DownloadIcon
+  Download as DownloadIcon,
+  BarChart as AnalyticsIcon
 } from '@mui/icons-material';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import api from '../services/api';
 import VisitsTable from '../components/VisitsTable';
@@ -30,6 +32,7 @@ import AnalyticsSnapshot from '../components/AnalyticsSnapshot';
 
 const DashboardPage = () => {
   const { user, logout } = useAuth();
+  const navigate = useNavigate();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const [visits, setVisits] = useState([]);
@@ -146,6 +149,14 @@ const DashboardPage = () => {
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
           <Typography variant="h4">Dashboard</Typography>
           <Stack direction="row" spacing={2}>
+            <Button 
+              variant="outlined"
+              onClick={() => navigate('/analytics')}
+              startIcon={<AnalyticsIcon />}
+              size={isMobile ? "medium" : "large"}
+            >
+              Analytics
+            </Button>
             <Button 
               variant="outlined"
               onClick={handleExport}

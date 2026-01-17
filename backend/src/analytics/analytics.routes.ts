@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { getSummary, getRange } from './analytics.controller';
+import { getSummary, getRevenueTrend, getStatusBreakdown, getTopMechanics } from './analytics.controller';
 import { authenticate, authorize } from '../auth/auth.middleware';
 
 const router = Router();
@@ -8,6 +8,8 @@ const router = Router();
 router.use(authenticate, authorize(['Manager', 'Owner/Admin']));
 
 router.get('/summary', getSummary);
-router.get('/range', getRange);
+router.get('/revenue-trend', getRevenueTrend);
+router.get('/status-breakdown', getStatusBreakdown);
+router.get('/top-mechanics', getTopMechanics);
 
 export default router;

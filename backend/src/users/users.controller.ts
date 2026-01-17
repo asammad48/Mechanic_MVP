@@ -38,3 +38,10 @@ export const getRoles = async (req: Request, res: Response) => {
   const roles = await prisma.role.findMany();
   res.json(roles);
 };
+
+export const getBranches = async (req: Request, res: Response) => {
+  const branches = await prisma.branch.findMany({
+    where: { isActive: true }
+  });
+  res.json(branches);
+};

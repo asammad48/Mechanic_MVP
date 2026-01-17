@@ -1,94 +1,196 @@
 import { Request, Response } from 'express';
 import prisma from '../lib/prisma';
 import { z } from 'zod';
+import { Prisma } from '@prisma/client';
 
-const summarySchema = z.object({
-  range: z.enum(['week', 'month', 'year']),
+const querySchema = z.object({
+  range: z.enum(['7d', '30d', '90d', '12m', 'week', 'month', 'year']).optional(),
+  dateFrom: z.string().optional(),
+  dateTo: z.string().optional(),
+  branchId: z.string().optional(),
+  allBranches: z.string().optional(),
 });
 
-const rangeSchema = z.object({
-  dateFrom: z.string().transform((str) => new Date(str)),
-  dateTo: z.string().transform((str) => new Date(str)),
-});
+const getBranchFilter = (req: any, branchId?: string, allBranches?: string) => {
+  if (req.user?.isSuperAdmin || req.user?.role === 'Owner/Admin') {
+    if (allBranches === 'true') return {};
+    if (branchId) return { branchId };
+    return {}; 
+  }
+  return { branchId: req.user?.branchId };
+};
+
+const getDateFilter = (range?: string, dateFrom?: string, dateTo?: string) => {
+  let from = dateFrom ? new Date(dateFrom) : null;
+  let to = dateTo ? new Date(dateTo) : new Date();
+
+  if (range && !dateFrom) {
+    from = new Date();
+    if (range === '7d' || range === 'week') from.setDate(from.getDate() - 7);
+    else if (range === '30d' || range === 'month') from.setMonth(from.getMonth() - 30);
+    else if (range === '90d') from.setDate(from.getDate() - 90);
+    else if (range === '12m' || range === 'year') from.setFullYear(from.getFullYear() - 1);
+  }
+  
+  if (from) {
+    return { gte: from, lte: to };
+  }
+  return { lte: to };
+};
 
 export const getSummary = async (req: Request, res: Response) => {
   try {
-    const { range } = summarySchema.parse(req.query);
-    const now = new Date();
-    let dateFrom: Date;
+    const { range, dateFrom, dateTo, branchId, allBranches } = querySchema.parse(req.query);
+    const branchFilter = getBranchFilter(req, branchId, allBranches);
+    const dateFilter = getDateFilter(range, dateFrom, dateTo);
 
-    if (range === 'week') {
-      dateFrom = new Date(now.setDate(now.getDate() - 7));
-    } else if (range === 'month') {
-      dateFrom = new Date(now.setMonth(now.getMonth() - 1));
-    } else {
-      dateFrom = new Date(now.setFullYear(now.getFullYear() - 1));
-    }
+    const where: Prisma.VisitWhereInput = {
+      ...branchFilter,
+      createdAt: dateFilter,
+    } as any;
 
-    const result = await getAnalyticsData(dateFrom, new Date());
-    res.json(result);
+    const [totalVisits, deliveredVisits, statusCounts] = await Promise.all([
+      prisma.visit.count({ where }),
+      prisma.visit.findMany({
+        where: { ...where, status: 'DELIVERED' } as any,
+        select: { grandTotal: true, dueAmount: true, paidAmount: true }
+      }),
+      prisma.visit.groupBy({
+        by: ['status'],
+        where,
+        _count: { _all: true }
+      })
+    ]);
+
+    const totalRevenue = deliveredVisits.reduce((acc, v) => acc + Number(v.grandTotal), 0);
+    const unpaidAmount = deliveredVisits.reduce((acc, v) => acc + Number(v.dueAmount), 0);
+    const deliveredCount = deliveredVisits.length;
+    const avgTicketSize = deliveredCount > 0 ? totalRevenue / deliveredCount : 0;
+    
+    const inProgressCount = (statusCounts as any[]).find(s => s.status === 'IN_PROGRESS')?._count?._all || 0;
+
+    res.json({
+      totalVisits,
+      totalRevenue,
+      unpaidAmount,
+      avgTicketSize,
+      deliveredCount,
+      inProgressCount,
+      statusBreakdown: (statusCounts as any[]).map(s => ({ status: s.status, count: s._count?._all || 0 }))
+    });
   } catch (error) {
-    if (error instanceof z.ZodError) {
-      return res.status(400).json({ message: 'Invalid input.', details: error.issues });
-    }
-    res.status(500).json({ message: 'An unexpected error occurred.' });
+    console.error('Analytics summary error:', error);
+    res.status(500).json({ message: 'Error fetching summary' });
   }
 };
 
-export const getRange = async (req: Request, res: Response) => {
+export const getRevenueTrend = async (req: Request, res: Response) => {
   try {
-    const { dateFrom, dateTo } = rangeSchema.parse(req.query);
-    const result = await getAnalyticsData(dateFrom, dateTo);
-    res.json(result);
+    const { range, dateFrom, dateTo, branchId, allBranches } = querySchema.parse(req.query);
+    const branchFilter = getBranchFilter(req, branchId, allBranches);
+    const dateFilter = getDateFilter(range, dateFrom, dateTo);
+
+    const visits = await prisma.visit.findMany({
+      where: {
+        ...branchFilter,
+        createdAt: dateFilter,
+        status: 'DELIVERED'
+      } as any,
+      select: {
+        createdAt: true,
+        grandTotal: true,
+        dueAmount: true,
+      },
+      orderBy: { createdAt: 'asc' }
+    });
+
+    const trendMap = new Map();
+
+    visits.forEach(v => {
+      const date = v.createdAt.toISOString().split('T')[0];
+      const month = v.createdAt.toISOString().slice(0, 7);
+      const key = range === '12m' ? month : date;
+
+      if (!trendMap.has(key)) {
+        trendMap.set(key, { label: key, revenue: 0, visits: 0, unpaid: 0 });
+      }
+      const data = trendMap.get(key);
+      data.revenue += Number(v.grandTotal);
+      data.visits += 1;
+      data.unpaid += Number(v.dueAmount);
+    });
+
+    res.json(Array.from(trendMap.values()));
   } catch (error) {
-    if (error instanceof z.ZodError) {
-      return res.status(400).json({ message: 'Invalid input.', details: error.issues });
-    }
-    res.status(500).json({ message: 'An unexpected error occurred.' });
+    console.error('Revenue trend error:', error);
+    res.status(500).json({ message: 'Error fetching revenue trend' });
   }
 };
 
-const getAnalyticsData = async (dateFrom: Date, dateTo: Date) => {
-  const total_visits = await prisma.visit.count({
-    where: {
-      createdAt: {
-        gte: dateFrom,
-        lte: dateTo,
-      },
-    },
-  });
+export const getStatusBreakdown = async (req: Request, res: Response) => {
+  try {
+    const { range, dateFrom, dateTo, branchId, allBranches } = querySchema.parse(req.query);
+    const branchFilter = getBranchFilter(req, branchId, allBranches);
+    const dateFilter = getDateFilter(range, dateFrom, dateTo);
 
-  const revenue = await prisma.visit.aggregate({
-    _sum: {
-      grandTotal: true,
-    },
-    where: {
-      status: 'DELIVERED',
-      createdAt: {
-        gte: dateFrom,
-        lte: dateTo,
-      },
-    },
-  });
+    const statusCounts = await prisma.visit.groupBy({
+      by: ['status'],
+      where: {
+        ...branchFilter,
+        createdAt: dateFilter,
+      } as any,
+      _count: { _all: true }
+    });
 
-  const unpaid = await prisma.visit.aggregate({
-    _sum: {
-      dueAmount: true,
-    },
-    where: {
-      dueAmount: {
-        gt: 0,
-      },
-      createdAt: {
-        gte: dateFrom,
-        lte: dateTo,
-      },
-    },
-  });
+    res.json((statusCounts as any[]).map(s => ({ status: s.status, count: s._count?._all || 0 })));
+  } catch (error) {
+    console.error('Status breakdown error:', error);
+    res.status(500).json({ message: 'Error fetching status breakdown' });
+  }
+};
 
-  return {
-    total_visits,
-    total_revenue: revenue._sum?.grandTotal || 0,
-    unpaid_amount: unpaid._sum?.dueAmount || 0,
-  };
+export const getTopMechanics = async (req: Request, res: Response) => {
+  try {
+    const { range, dateFrom, dateTo, branchId, allBranches } = querySchema.parse(req.query);
+    const branchFilter = getBranchFilter(req, branchId, allBranches);
+    const dateFilter = getDateFilter(range, dateFrom, dateTo);
+
+    const visits = await prisma.visit.findMany({
+      where: {
+        ...branchFilter,
+        createdAt: dateFilter,
+        status: 'DELIVERED',
+        assignedMechanicId: { not: null }
+      } as any,
+      include: {
+        assignedMechanic: {
+          select: { name: true }
+        }
+      }
+    });
+
+    const mechMap = new Map();
+
+    visits.forEach((v: any) => {
+      const mechId = v.assignedMechanicId!;
+      const mechName = v.assignedMechanic?.name || 'Unknown';
+
+      if (!mechMap.has(mechId)) {
+        mechMap.set(mechId, { mechanicId: mechId, mechanicName: mechName, deliveredCount: 0, revenue: 0 });
+      }
+      const data = mechMap.get(mechId);
+      data.deliveredCount += 1;
+      data.revenue += Number(v.grandTotal);
+    });
+
+    const result = Array.from(mechMap.values()).map(m => ({
+      ...m,
+      avgTicket: m.deliveredCount > 0 ? m.revenue / m.deliveredCount : 0
+    })).sort((a, b) => b.revenue - a.revenue);
+
+    res.json(result);
+  } catch (error) {
+    console.error('Top mechanics error:', error);
+    res.status(500).json({ message: 'Error fetching top mechanics' });
+  }
 };

@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { AuthProvider, useAuth } from './contexts/AuthContext.jsx';
 import LoginPage from './pages/LoginPage';
 import DashboardPage from './pages/DashboardPage';
+import AnalyticsPage from './pages/AnalyticsPage';
 import { CircularProgress, Box } from '@mui/material';
 
 const App = () => {
@@ -30,6 +31,7 @@ const Main = () => {
     <Routes>
       <Route path="/login" element={!user ? <LoginPage /> : <Navigate to="/" />} />
       <Route path="/" element={user ? <DashboardPage /> : <Navigate to="/login" />} />
+      <Route path="/analytics" element={user ? <AnalyticsPage /> : <Navigate to="/login" />} />
     </Routes>
   );
 }
