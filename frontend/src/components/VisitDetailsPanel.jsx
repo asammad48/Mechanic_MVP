@@ -54,7 +54,20 @@ const VisitDetailsPanel = ({ visitId, onUpdate }) => {
     setLoading(true);
     try {
       const endpoint = type === 'labor' ? `/visits/${visitId}/labor-items` : type === 'part' ? `/visits/${visitId}/part-items` : `/visits/${visitId}/outside-work-items`;
-      await api.post(endpoint, data);
+      
+      // Ensure numeric values are numbers, not strings
+      const payload = { ...data };
+      if (type === 'labor') {
+        payload.hours = Number(payload.hours);
+        payload.ratePerHour = Number(payload.ratePerHour);
+      } else if (type === 'part') {
+        payload.qty = Number(payload.qty);
+        payload.unitPrice = Number(payload.unitPrice);
+      } else if (type === 'outside') {
+        payload.cost = Number(payload.cost);
+      }
+
+      await api.post(endpoint, payload);
       await fetchVisit(); // Refresh visit to get updated items and totals
       
       // Reset relevant form
