@@ -9,7 +9,7 @@ import visitRoutes from './visits/visits.routes';
 import analyticsRoutes from './analytics/analytics.routes';
 
 const app = express();
-const PORT = process.env.PORT || 4000;
+const PORT = process.env.PORT || 3000;
 
 if (!process.env.DATABASE_URL || !process.env.JWT_SECRET) {
   console.error('FATAL ERROR: DATABASE_URL and JWT_SECRET must be defined.');
