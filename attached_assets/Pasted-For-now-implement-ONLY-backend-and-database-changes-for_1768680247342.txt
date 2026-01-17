@@ -1,0 +1,155 @@
+For now, implement ONLY backend and database changes for Jules Mechanic.
+Do NOT touch frontend.
+Do NOT refactor existing unrelated code.
+Do NOT add automated or integration tests.
+Keep the existing project structure and style.
+
+========================
+SCOPE
+========================
+- Backend: Node.js + Express
+- Database: PostgreSQL + Prisma
+- Focus only on Visit enhancements (labor, parts, outside work, mandatory fields)
+- Ensure backend runs without errors
+
+========================
+DATABASE (PRISMA / POSTGRES)
+========================
+
+1) Visit model (update)
+Ensure these fields exist and are REQUIRED:
+- complaint (String, required)
+- mileage (Int, required)
+
+Ensure these totals exist (Decimal):
+- subtotalLabor
+- subtotalParts
+- subtotalOutside
+- discountAmount
+- taxAmount
+- grandTotal
+- paidAmount
+- dueAmount
+
+2) LaborItem model (update / verify)
+Labor must be per-hour based.
+Fields:
+- id
+- visitId (FK)
+- title (String, required)
+- hours (Decimal, required)
+- ratePerHour (Decimal, required)
+- subtotal (Decimal, computed server-side)
+- createdAt
+
+Relation:
+Visit → LaborItems (one-to-many)
+
+3) PartItem model (update / verify)
+Fields:
+- id
+- visitId (FK)
+- name (String, required)
+- qty (Int, required)
+- unitPrice (Decimal, required)
+- subtotal (Decimal, computed server-side)
+- createdAt
+
+Relation:
+Visit → PartItems (one-to-many)
+
+4) NEW MODEL: OutsideWorkItem
+Create a new model for outsourced / third-party work.
+
+Fields:
+- id
+- visitId (FK)
+- vendorName (String, required)
+- workDescription (String, required)
+- cost (Decimal, required)
+- notes (String, optional)
+- createdAt
+
+Relation:
+Visit → OutsideWorkItems (one-to-many)
+
+5) Migrations
+- Add migrations for new fields and models
+- Regenerate Prisma client
+- Ensure schema is clean and consistent
+
+========================
+BACKEND (NODE / EXPRESS)
+========================
+
+1) Validation (Zod)
+Update backend validation schemas:
+
+- POST /visits
+  Required:
+  - reg no
+  - complaint
+  - mileage
+  - customer phone OR customer name (at least one)
+
+- POST labor item
+  Required:
+  - title
+  - hours
+  - ratePerHour
+
+- POST part item
+  Required:
+  - name
+  - qty
+  - unitPrice
+
+- POST outside-work item
+  Required:
+  - vendorName
+  - workDescription
+  - cost
+
+If validation fails → return clear error messages.
+
+2) New Backend Endpoints (Outside Work)
+Add endpoints:
+- POST /visits/:id/outside-work-items
+- DELETE /outside-work-items/:id
+- GET /visits/:id (must include outside work items)
+
+3) Server-side Calculations (CRITICAL)
+Backend is the ONLY source of truth.
+
+Whenever labor, parts, outside work, or payments change:
+- subtotalLabor = sum(labor.subtotal)
+- subtotalParts = sum(parts.subtotal)
+- subtotalOutside = sum(outside.cost)
+- grandTotal = subtotalLabor + subtotalParts + subtotalOutside - discount + tax
+- paidAmount = sum(payments not voided)
+- dueAmount = max(grandTotal - paidAmount, 0)
+
+Never trust frontend values for totals.
+
+4) Permissions
+Follow existing RBAC logic.
+Keep it simple and consistent with current behavior.
+(No new role rules needed unless already present.)
+
+========================
+TESTING / VERIFICATION
+========================
+- Do NOT write automated or integration tests.
+- Only ensure:
+  - Backend starts successfully
+  - APIs work via manual testing (Postman / curl)
+  - No runtime or TypeScript errors
+
+========================
+DELIVERABLES
+========================
+- Updated Prisma schema
+- New migration files
+- Updated backend logic for labor, parts, outside work
+- Totals recalculation logic working correctly
+- Backend runs cleanly
