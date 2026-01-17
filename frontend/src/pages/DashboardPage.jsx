@@ -68,22 +68,24 @@ const DashboardPage = () => {
       <AppBar position="sticky" elevation={0} sx={{ borderBottom: '1px solid', borderColor: 'divider', bgcolor: 'background.paper', color: 'text.primary', width: '100%' }}>
         <Box sx={{ px: { xs: 2, sm: 4, md: 6 } }}>
           <Toolbar disableGutters sx={{ justifyContent: 'space-between' }}>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              <CarIcon color="primary" sx={{ fontSize: 32 }} />
-              <Typography variant="h6" component="div" sx={{ fontWeight: 800, letterSpacing: -0.5 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+              <Box sx={{ bgcolor: 'primary.main', p: 0.8, borderRadius: 1.5, display: 'flex' }}>
+                <CarIcon sx={{ fontSize: 24, color: 'white' }} />
+              </Box>
+              <Typography variant="h6" component="div" sx={{ fontWeight: 800, letterSpacing: -0.5, color: 'primary.main' }}>
                 JULES MECHANIC
               </Typography>
             </Box>
             
-            <Stack direction="row" spacing={2} alignItems="center">
+            <Stack direction="row" spacing={3} alignItems="center">
               {!isMobile && (
-                <Stack direction="row" spacing={1} alignItems="center">
-                  <Avatar sx={{ width: 32, height: 32, bgcolor: 'primary.main' }}>
-                    <PersonIcon fontSize="small" />
+                <Stack direction="row" spacing={1.5} alignItems="center">
+                  <Avatar sx={{ width: 36, height: 36, bgcolor: 'primary.main', fontWeight: 700, fontSize: '0.875rem' }}>
+                    {user?.name?.charAt(0)}
                   </Avatar>
                   <Box>
-                    <Typography variant="subtitle2" sx={{ lineHeight: 1.2 }}>{user?.name}</Typography>
-                    <Typography variant="caption" color="text.secondary">{user?.role?.name}</Typography>
+                    <Typography variant="subtitle2" sx={{ fontWeight: 700, lineHeight: 1.2 }}>{user?.name}</Typography>
+                    <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 500 }}>{user?.role?.name}</Typography>
                   </Box>
                 </Stack>
               )}
@@ -92,8 +94,15 @@ const DashboardPage = () => {
                 size="small" 
                 onClick={logout} 
                 startIcon={<LogoutIcon />}
-                color="inherit"
-                sx={{ borderColor: 'divider' }}
+                sx={{ 
+                  borderColor: 'divider', 
+                  color: 'text.secondary',
+                  '&:hover': {
+                    borderColor: 'primary.main',
+                    bgcolor: 'transparent',
+                    color: 'primary.main'
+                  }
+                }}
               >
                 Logout
               </Button>
@@ -110,7 +119,14 @@ const DashboardPage = () => {
             onClick={handleOpenModal} 
             startIcon={<AddIcon />}
             size={isMobile ? "medium" : "large"}
-            sx={{ boxShadow: theme.shadows[4] }}
+            sx={{ 
+              bgcolor: 'primary.main',
+              px: 3,
+              py: 1.2,
+              '&:hover': {
+                bgcolor: 'primary.dark',
+              }
+            }}
           >
             New Car Entry
           </Button>

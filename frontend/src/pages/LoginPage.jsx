@@ -52,7 +52,7 @@ const LoginPage = () => {
         display: 'flex', 
         alignItems: 'center', 
         justifyContent: 'center',
-        background: 'linear-gradient(135deg, #f5f7f9 0%, #e4e9f2 100%)',
+        background: 'linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)',
         p: 2
       }}
     >
@@ -62,7 +62,7 @@ const LoginPage = () => {
           sx={{ 
             p: { xs: 4, md: 6 }, 
             borderRadius: 4, 
-            boxShadow: '0 10px 40px rgba(0,0,0,0.04)',
+            boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1)',
             border: '1px solid',
             borderColor: 'divider',
             bgcolor: 'background.paper'
