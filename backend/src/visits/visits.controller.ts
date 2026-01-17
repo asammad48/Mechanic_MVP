@@ -6,6 +6,7 @@ const visitSchema = z.object({
   vehicleId: z.string(),
   customerId: z.string(),
   complaint: z.string().min(1),
+  mileage: z.number().int(),
   priority: z.string().optional(),
   expectedDelivery: z.string().optional(),
   assignedMechanicId: z.string().optional(),
@@ -14,6 +15,7 @@ const visitSchema = z.object({
 const updateVisitSchema = z.object({
   status: z.string().optional(),
   complaint: z.string().optional(),
+  mileage: z.number().int().optional(),
   priority: z.string().optional(),
   expectedDelivery: z.string().optional(),
   assignedMechanicId: z.string().optional(),
@@ -25,13 +27,20 @@ const updateVisitSchema = z.object({
 const laborItemSchema = z.object({
   title: z.string().min(1),
   hours: z.number(),
-  rate: z.number(),
+  ratePerHour: z.number(),
 });
 
 const partItemSchema = z.object({
   name: z.string().min(1),
   qty: z.number().int(),
   unitPrice: z.number(),
+});
+
+const outsideWorkItemSchema = z.object({
+  vendorName: z.string().min(1),
+  workDescription: z.string().min(1),
+  cost: z.number(),
+  notes: z.string().optional(),
 });
 
 const paymentSchema = z.object({
@@ -43,14 +52,15 @@ const paymentSchema = z.object({
 const recalculateTotals = async (visitId: string) => {
   const visit = await prisma.visit.findUnique({
     where: { id: visitId },
-    include: { laborItems: true, partItems: true, payments: true },
+    include: { laborItems: true, partItems: true, outsideWorkItems: true, payments: true },
   });
 
   if (!visit) return;
 
   const subtotalLabor = visit.laborItems.reduce((acc: number, item: any) => acc + item.subtotal, 0);
   const subtotalParts = visit.partItems.reduce((acc: number, item: any) => acc + item.subtotal, 0);
-  const subtotal = subtotalLabor + subtotalParts;
+  const subtotalOutside = visit.outsideWorkItems.reduce((acc: number, item: any) => acc + item.cost, 0);
+  const subtotal = subtotalLabor + subtotalParts + subtotalOutside;
 
   let discountAmount = 0;
   if (visit.discountType === 'PERCENTAGE') {
@@ -63,8 +73,8 @@ const recalculateTotals = async (visitId: string) => {
   const taxAmount = taxableAmount * (visit.taxRate / 100);
 
   const grandTotal = taxableAmount + taxAmount;
-  const paidAmount = visit.payments.reduce((acc: number, item: any) => acc + item.paidAmount, 0);
-  const dueAmount = grandTotal - paidAmount;
+  const paidAmount = visit.payments.filter((p: any) => !p.isVoided).reduce((acc: number, item: any) => acc + item.paidAmount, 0);
+  const dueAmount = Math.max(grandTotal - paidAmount, 0);
   const paymentStatus = dueAmount <= 0 ? 'PAID' : paidAmount > 0 ? 'PARTIAL' : 'UNPAID';
 
   await prisma.visit.update({
@@ -72,6 +82,7 @@ const recalculateTotals = async (visitId: string) => {
     data: {
       subtotalLabor,
       subtotalParts,
+      subtotalOutside,
       taxAmount,
       discountAmount,
       grandTotal,
