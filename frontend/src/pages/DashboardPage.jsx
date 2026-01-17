@@ -127,7 +127,7 @@ const DashboardPage = () => {
         </Box>
 
         <Grid container spacing={3}>
-          <Grid item xs={12} lg={8}>
+          <Grid size={{ xs: 12, lg: 8 }}>
             <Paper sx={{ p: 0, overflow: 'hidden' }}>
               <Box sx={{ p: 2, borderBottom: '1px solid', borderColor: 'divider', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                 <Typography variant="h6">Today's Visits</Typography>
@@ -138,7 +138,7 @@ const DashboardPage = () => {
             </Paper>
           </Grid>
 
-          <Grid item xs={12} lg={4}>
+          <Grid size={{ xs: 12, lg: 4 }}>
             <Paper sx={{ p: 3, height: '100%' }}>
               <Typography variant="h6" gutterBottom>Visit Details</Typography>
               <VisitDetailsPanel visitId={selectedVisitId} onUpdate={handleVisitUpdate} />

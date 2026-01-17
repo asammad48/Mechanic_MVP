@@ -35,7 +35,7 @@ const AnalyticsSnapshot = () => {
   }, []);
 
   const StatCard = ({ title, data, icon: Icon, color }) => (
-    <Grid item xs={12} md={4}>
+    <Grid size={{ xs: 12, md: 4 }}>
       <Paper 
         elevation={0}
         sx={{ 
@@ -79,7 +79,7 @@ const AnalyticsSnapshot = () => {
   return (
     <Box sx={{ width: '100%' }}>
       <Typography variant="h6" sx={{ mb: 2 }}>Business Insights</Typography>
-      <Grid container spacing={3} sx={{ width: '100%', margin: 0 }}>
+      <Grid container spacing={3} sx={{ width: '100%' }}>
         <StatCard title="This Week" data={summary.week} icon={TrendingUpIcon} color="primary.main" />
         <StatCard title="This Month" data={summary.month} icon={EventIcon} color="secondary.main" />
         <StatCard title="This Year" data={summary.year} icon={MoneyIcon} color="success.main" />
