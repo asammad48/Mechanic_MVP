@@ -76,6 +76,23 @@ Four user roles with hierarchical permissions:
 - **axios**: HTTP client
 - **react-router-dom**: Client-side routing
 
+### Development & Workflows
+
+To start the development environment, use the **App Server** workflow:
+- **Command**: `bash -c "cd backend && npm run start & cd frontend && npm run dev"`
+- **Backend**: Runs on port 3000 (accessible via `http://localhost:3000`)
+- **Frontend**: Runs on port 5000 (accessible via `http://0.0.0.0:5000`)
+
+### Database Migrations
+To sync the database schema without resetting data:
+```bash
+cd backend && npx prisma db push
+```
+To seed initial data:
+```bash
+cd backend && npx prisma db seed
+```
+
 ### Development Tools
 - **TypeScript**: Backend type checking
 - **tsx**: TypeScript execution for seeding
