@@ -72,7 +72,7 @@ const AnalyticsPage = () => {
   if (error) return <Alert severity="error">{error}</Alert>;
 
   return (
-    <Box p={3}>
+    <Box>
       <Typography variant="h4" gutterBottom>Analytics</Typography>
       
       {/* Filters Bar */}

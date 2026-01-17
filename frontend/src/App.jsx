@@ -4,6 +4,7 @@ import { AuthProvider, useAuth } from './contexts/AuthContext.jsx';
 import LoginPage from './pages/LoginPage';
 import DashboardPage from './pages/DashboardPage';
 import AnalyticsPage from './pages/AnalyticsPage';
+import AppLayout from './components/AppLayout';
 import { CircularProgress, Box } from '@mui/material';
 
 const App = () => {
@@ -30,8 +31,10 @@ const Main = () => {
   return (
     <Routes>
       <Route path="/login" element={!user ? <LoginPage /> : <Navigate to="/" />} />
-      <Route path="/" element={user ? <DashboardPage /> : <Navigate to="/login" />} />
-      <Route path="/analytics" element={user ? <AnalyticsPage /> : <Navigate to="/login" />} />
+      <Route element={user ? <AppLayout /> : <Navigate to="/login" />}>
+        <Route path="/" element={<DashboardPage />} />
+        <Route path="/analytics" element={<AnalyticsPage />} />
+      </Route>
     </Routes>
   );
 }

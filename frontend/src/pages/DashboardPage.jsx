@@ -98,54 +98,8 @@ const DashboardPage = () => {
   };
 
   return (
-    <Box sx={{ flexGrow: 1, bgcolor: 'background.default', minHeight: '100vh' }}>
-      <AppBar position="sticky" elevation={0} sx={{ borderBottom: '1px solid', borderColor: 'divider', bgcolor: 'background.paper', color: 'text.primary', width: '100%' }}>
-        <Box sx={{ px: { xs: 2, sm: 4, md: 6 } }}>
-          <Toolbar disableGutters sx={{ justifyContent: 'space-between' }}>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-              <Box sx={{ bgcolor: 'primary.main', p: 0.8, borderRadius: 1.5, display: 'flex' }}>
-                <CarIcon sx={{ fontSize: 24, color: 'white' }} />
-              </Box>
-              <Typography variant="h6" component="div" sx={{ fontWeight: 800, letterSpacing: -0.5, color: 'primary.main' }}>
-                JULES MECHANIC
-              </Typography>
-            </Box>
-            
-            <Stack direction="row" spacing={3} alignItems="center">
-              {!isMobile && (
-                <Stack direction="row" spacing={1.5} alignItems="center">
-                  <Avatar sx={{ width: 36, height: 36, bgcolor: 'primary.main', fontWeight: 700, fontSize: '0.875rem' }}>
-                    {user?.name?.charAt(0)}
-                  </Avatar>
-                  <Box>
-                    <Typography variant="subtitle2" sx={{ fontWeight: 700, lineHeight: 1.2 }}>{user?.name}</Typography>
-                    <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 500 }}>{user?.role?.name}</Typography>
-                  </Box>
-                </Stack>
-              )}
-              <Button 
-                variant="outlined" 
-                size="small" 
-                onClick={logout} 
-                startIcon={<LogoutIcon />}
-                sx={{ 
-                  borderColor: 'divider', 
-                  color: 'text.secondary',
-                  '&:hover': {
-                    borderColor: 'primary.main',
-                    bgcolor: 'transparent',
-                    color: 'primary.main'
-                  }
-                }}
-              >
-                Logout
-              </Button>
-            </Stack>
-          </Toolbar>
-        </Box>
-      </AppBar>
-
-      <Container maxWidth={false} sx={{ mt: 4, mb: 4, px: { xs: 2, sm: 4, md: 6 } }}>
+    <Box sx={{ flexGrow: 1, bgcolor: 'background.default' }}>
+      <Container maxWidth={false} sx={{ mb: 4, px: { xs: 2, sm: 4, md: 6 } }}>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
           <Typography variant="h4">Dashboard</Typography>
           <Stack direction="row" spacing={2}>
