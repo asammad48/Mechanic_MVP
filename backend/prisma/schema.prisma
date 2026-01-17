@@ -7,7 +7,7 @@ generator client {
 }
 
 model Branch {
-  id        String   @id @default(cuid())
+  id        Int      @id @default(autoincrement())
   name      String
   code      String   @unique
   address   String?
@@ -24,23 +24,23 @@ model Branch {
 }
 
 model Role {
-  id    String @id @default(cuid())
+  id    Int @id @default(autoincrement())
   name  String @unique
   users User[]
 }
 
 model User {
-  id            String      @id @default(cuid())
+  id            Int      @id @default(autoincrement())
   name          String
   email         String      @unique
   password_hash String
   isSuperAdmin  Boolean     @default(false)
 
   role    Role   @relation(fields: [roleId], references: [id])
-  roleId  String
+  roleId  Int
 
   branch   Branch? @relation(fields: [branchId], references: [id])
-  branchId String?
+  branchId Int?
 
   createdAt DateTime @default(now())
 
@@ -54,13 +54,13 @@ model User {
 }
 
 model Customer {
-  id      String   @id @default(cuid())
+  id      Int      @id @default(autoincrement())
   name    String
   phone   String
   address String?
 
   branch   Branch @relation(fields: [branchId], references: [id])
-  branchId String
+  branchId Int
 
   createdAt DateTime @default(now())
 
@@ -72,7 +72,7 @@ model Customer {
 }
 
 model Vehicle {
-  id      String @id @default(cuid())
+  id      Int @id @default(autoincrement())
   regNo   String
   make    String
   model   String
@@ -82,10 +82,10 @@ model Vehicle {
   mileage Int?
 
   customer   Customer @relation(fields: [customerId], references: [id])
-  customerId String
+  customerId Int
 
   branch   Branch @relation(fields: [branchId], references: [id])
-  branchId String
+  branchId Int
 
   visits Visit[]
 
@@ -94,7 +94,7 @@ model Vehicle {
 }
 
 model Visit {
-  id                String    @id @default(cuid())
+  id                Int    @id @default(autoincrement())
   status            String    @default("CREATED") // CREATED, IN_PROGRESS, WAITING_PARTS, READY, DELIVERED, CANCELLED
   complaint         String
   mileage           Int
@@ -115,19 +115,19 @@ model Visit {
   dueAmount     Decimal @default(0)
 
   vehicle   Vehicle @relation(fields: [vehicleId], references: [id])
-  vehicleId String
+  vehicleId Int
 
   customer   Customer @relation(fields: [customerId], references: [id])
-  customerId String
+  customerId Int
 
   branch   Branch @relation(fields: [branchId], references: [id])
-  branchId String
+  branchId Int
 
   assignedMechanic    User?    @relation("AssignedTo", fields: [assignedMechanicId], references: [id])
-  assignedMechanicId  String?
+  assignedMechanicId  Int?
 
   createdBy          User     @relation("CreatedBy", fields: [createdByUserId], references: [id])
-  createdByUserId    String
+  createdByUserId    Int
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -144,37 +144,37 @@ model Visit {
 }
 
 model LaborItem {
-  id        String   @id @default(cuid())
+  id        Int      @id @default(autoincrement())
   title     String
   hours     Decimal
   ratePerHour Decimal
   subtotal  Decimal
 
   visit    Visit  @relation(fields: [visitId], references: [id])
-  visitId  String
+  visitId  Int
 
   deletedAt       DateTime?
   deletedBy       User?     @relation("DeletedByLabor", fields: [deletedByUserId], references: [id])
-  deletedByUserId String?
+  deletedByUserId Int?
 }
 
 model PartItem {
-  id         String   @id @default(cuid())
+  id         Int      @id @default(autoincrement())
   name       String
   qty        Int
   unitPrice  Decimal
   subtotal   Decimal
 
   visit    Visit  @relation(fields: [visitId], references: [id])
-  visitId  String
+  visitId  Int
 
   deletedAt       DateTime?
   deletedBy       User?     @relation("DeletedByPart", fields: [deletedByUserId], references: [id])
-  deletedByUserId String?
+  deletedByUserId Int?
 }
 
 model OutsideWorkItem {
-  id              String   @id @default(cuid())
+  id              Int      @id @default(autoincrement())
   vendorName      String
   workDescription String
   cost            Decimal
@@ -182,51 +182,51 @@ model OutsideWorkItem {
   createdAt       DateTime @default(now())
 
   visit    Visit  @relation(fields: [visitId], references: [id])
-  visitId  String
+  visitId  Int
 }
 
 model Payment {
-  id          String   @id @default(cuid())
+  id          Int      @id @default(autoincrement())
   paidAmount  Decimal
   method      String?  // CASH, CARD, TRANSFER
   paidAt      DateTime @default(now())
 
   visit    Visit @relation(fields: [visitId], references: [id])
-  visitId  String
+  visitId  Int
 
   isVoided        Boolean   @default(false)
   voidReason      String?
   voidedAt        DateTime?
   voidedBy        User?     @relation("VoidedBy", fields: [voidedByUserId], references: [id])
-  voidedByUserId  String?
+  voidedByUserId  Int?
 }
 
 model VisitNote {
-  id        String   @id @default(cuid())
+  id        Int      @id @default(autoincrement())
   note      String
 
   visit    Visit @relation(fields: [visitId], references: [id])
-  visitId  String
+  visitId  Int
 
   createdBy      User     @relation(fields: [createdByUserId], references: [id])
-  createdByUserId String
+  createdByUserId Int
 
   createdAt DateTime @default(now())
 }
 
 model VisitEvent {
-  id        String   @id @default(cuid())
+  id        Int      @id @default(autoincrement())
   type      String   // E.g., 'STATUS_CHANGE', 'PAYMENT_VOIDED', 'MECHANIC_ASSIGNED'
   payloadJson String?
 
   visit    Visit @relation(fields: [visitId], references: [id])
-  visitId  String
+  visitId  Int
 
   branch   Branch @relation(fields: [branchId], references: [id])
-  branchId String
+  branchId Int
 
   createdBy      User     @relation(fields: [createdByUserId], references: [id])
-  createdByUserId String
+  createdByUserId Int
 
   createdAt DateTime @default(now())
 }
