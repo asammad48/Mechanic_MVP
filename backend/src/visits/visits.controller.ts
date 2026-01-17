@@ -140,12 +140,31 @@ export const getVisitById = async (req: Request, res: Response) => {
 
 export const createVisit = async (req: Request, res: Response) => {
   try {
-    const { vehicleId, customerId, complaint, priority, expectedDelivery, assignedMechanicId } = visitSchema.parse(req.body);
+    const body = req.body;
+    // Map snake_case from frontend to camelCase for backend validation
+    const mappedData = {
+      vehicleId: body.vehicle_id || body.vehicleId,
+      customerId: body.customer_id || body.customerId,
+      complaint: body.complaint,
+      priority: body.priority,
+      expectedDelivery: body.expected_delivery || body.expectedDelivery,
+      assignedMechanicId: body.assigned_mechanic_id || body.assignedMechanicId
+    };
+
+    const { vehicleId, customerId, complaint, priority, expectedDelivery, assignedMechanicId } = visitSchema.parse(mappedData);
+    
+    const branch = await prisma.branch.findFirst();
+    const branchId = req.user?.branchId || branch?.id;
+
+    if (!branchId) {
+      return res.status(400).json({ message: 'Branch ID is missing.' });
+    }
+
     const visit = await prisma.visit.create({
       data: {
         vehicleId,
         customerId,
-        branchId: req.user!.branchId!,
+        branchId: branchId,
         complaint,
         priority,
         expectedDelivery: expectedDelivery ? new Date(expectedDelivery) : null,
@@ -158,6 +177,7 @@ export const createVisit = async (req: Request, res: Response) => {
     if (error instanceof z.ZodError) {
       return res.status(400).json({ message: 'Invalid input.', details: error.issues });
     }
+    console.error('Error creating visit:', error);
     res.status(500).json({ message: 'An unexpected error occurred.' });
   }
 };
