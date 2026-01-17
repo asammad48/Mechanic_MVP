@@ -27,8 +27,10 @@ app.use('/visits', visitRoutes);
 app.use('/analytics', analyticsRoutes);
 import laborItemRoutes from './labor-items/labor-items.routes';
 import partItemRoutes from './part-items/part-items.routes';
+import outsideWorkItemRoutes from './outside-work-items/outside-work-items.routes';
 app.use('/labor-items', laborItemRoutes);
 app.use('/part-items', partItemRoutes);
+app.use('/outside-work-items', outsideWorkItemRoutes);
 
 app.get('/', (req, res) => {
   res.send('Jules Mechanic API is running!');

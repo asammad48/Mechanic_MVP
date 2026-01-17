@@ -1,14 +1,16 @@
 import { Router } from 'express';
-import {
-  getVisits,
-  getVisitById,
-  createVisit,
-  updateVisit,
-  addLaborItem,
+import { 
+  getVisits, 
+  getVisitById, 
+  createVisit, 
+  updateVisit, 
+  addLaborItem, 
   deleteLaborItem,
-  addPartItem,
+  addPartItem, 
   deletePartItem,
-  addPayment,
+  addOutsideWorkItem,
+  deleteOutsideWorkItem,
+  addPayment 
 } from './visits.controller';
 import { authenticate, authorize } from '../auth/auth.middleware';
 
@@ -23,6 +25,7 @@ router.post('/', authorize(['Receptionist', 'Manager', 'Owner/Admin']), createVi
 router.patch('/:id', authorize(['Manager', 'Owner/Admin', 'Mechanic']), updateVisit);
 router.post('/:id/labor-items', authorize(['Mechanic', 'Manager', 'Owner/Admin']), addLaborItem);
 router.post('/:id/part-items', authorize(['Manager', 'Owner/Admin']), addPartItem);
+router.post('/:id/outside-work-items', authorize(['Manager', 'Owner/Admin']), addOutsideWorkItem);
 router.post('/:id/payments', authorize(['Receptionist', 'Manager', 'Owner/Admin']), addPayment);
 
 export default router;

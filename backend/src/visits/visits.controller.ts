@@ -3,17 +3,25 @@ import prisma from '../lib/prisma';
 import { z } from 'zod';
 
 const visitSchema = z.object({
-  vehicleId: z.string(),
-  customerId: z.string(),
-  complaint: z.string().min(1),
+  vehicleId: z.string().optional(),
+  regNo: z.string().min(1, "Vehicle Registration Number is required"),
+  customerId: z.string().optional(),
+  customerName: z.string().optional(),
+  customerPhone: z.string().optional(),
+  complaint: z.string().min(1, "Complaint is required"),
+  mileage: z.number().int("Mileage must be an integer").min(0, "Mileage cannot be negative"),
   priority: z.string().optional(),
   expectedDelivery: z.string().optional(),
   assignedMechanicId: z.string().optional(),
+}).refine(data => data.customerName || data.customerPhone || data.customerId, {
+  message: "Either customer details or customer ID must be provided",
+  path: ["customerName"]
 });
 
 const updateVisitSchema = z.object({
   status: z.string().optional(),
   complaint: z.string().optional(),
+  mileage: z.number().int().optional(),
   priority: z.string().optional(),
   expectedDelivery: z.string().optional(),
   assignedMechanicId: z.string().optional(),
@@ -25,13 +33,20 @@ const updateVisitSchema = z.object({
 const laborItemSchema = z.object({
   title: z.string().min(1),
   hours: z.number(),
-  rate: z.number(),
+  ratePerHour: z.number(),
 });
 
 const partItemSchema = z.object({
   name: z.string().min(1),
   qty: z.number().int(),
   unitPrice: z.number(),
+});
+
+const outsideWorkItemSchema = z.object({
+  vendorName: z.string().min(1),
+  workDescription: z.string().min(1),
+  cost: z.number(),
+  notes: z.string().optional(),
 });
 
 const paymentSchema = z.object({
@@ -43,27 +58,34 @@ const paymentSchema = z.object({
 const recalculateTotals = async (visitId: string) => {
   const visit = await prisma.visit.findUnique({
     where: { id: visitId },
-    include: { laborItems: true, partItems: true, payments: true },
+    include: { 
+      laborItems: true, 
+      partItems: true, 
+      outsideItems: true,
+      payments: true 
+    },
   });
 
   if (!visit) return;
 
-  const subtotalLabor = visit.laborItems.reduce((acc: number, item: any) => acc + item.subtotal, 0);
-  const subtotalParts = visit.partItems.reduce((acc: number, item: any) => acc + item.subtotal, 0);
-  const subtotal = subtotalLabor + subtotalParts;
+  const subtotalLabor = visit.laborItems.reduce((acc: number, item: any) => acc + Number(item.subtotal), 0);
+  const subtotalParts = visit.partItems.reduce((acc: number, item: any) => acc + Number(item.subtotal), 0);
+  const subtotalOutside = visit.outsideItems.reduce((acc: number, item: any) => acc + Number(item.cost), 0);
+  
+  const subtotal = subtotalLabor + subtotalParts + subtotalOutside;
 
   let discountAmount = 0;
   if (visit.discountType === 'PERCENTAGE') {
-    discountAmount = subtotal * (visit.discountAmount / 100);
+    discountAmount = subtotal * (Number(visit.discountAmount) / 100);
   } else {
-    discountAmount = visit.discountAmount;
+    discountAmount = Number(visit.discountAmount);
   }
 
   const taxableAmount = subtotal - discountAmount;
-  const taxAmount = taxableAmount * (visit.taxRate / 100);
+  const taxAmount = taxableAmount * (Number(visit.taxRate) / 100);
 
   const grandTotal = taxableAmount + taxAmount;
-  const paidAmount = visit.payments.reduce((acc: number, item: any) => acc + item.paidAmount, 0);
+  const paidAmount = visit.payments.reduce((acc: number, item: any) => acc + Number(item.paidAmount), 0);
   const dueAmount = grandTotal - paidAmount;
   const paymentStatus = dueAmount <= 0 ? 'PAID' : paidAmount > 0 ? 'PARTIAL' : 'UNPAID';
 
@@ -72,8 +94,9 @@ const recalculateTotals = async (visitId: string) => {
     data: {
       subtotalLabor,
       subtotalParts,
+      subtotalOutside,
       taxAmount,
-      discountAmount,
+      discountAmount: visit.discountType === 'PERCENTAGE' ? visit.discountAmount : Number(visit.discountAmount),
       grandTotal,
       paidAmount,
       dueAmount,
@@ -113,6 +136,7 @@ export const getVisits = async (req: Request, res: Response) => {
       vehicle: true,
       customer: true,
       assignedMechanic: true,
+      outsideItems: true,
     },
   });
   res.json(visits);
@@ -128,6 +152,7 @@ export const getVisitById = async (req: Request, res: Response) => {
       assignedMechanic: true,
       laborItems: true,
       partItems: true,
+      outsideItems: true,
       payments: true,
       notes: true,
     },
@@ -140,19 +165,6 @@ export const getVisitById = async (req: Request, res: Response) => {
 
 export const createVisit = async (req: Request, res: Response) => {
   try {
-    const body = req.body;
-    // Map snake_case from frontend to camelCase for backend validation
-    const mappedData = {
-      vehicleId: body.vehicle_id || body.vehicleId,
-      customerId: body.customer_id || body.customerId,
-      complaint: body.complaint,
-      priority: body.priority,
-      expectedDelivery: body.expected_delivery || body.expectedDelivery,
-      assignedMechanicId: body.assigned_mechanic_id || body.assignedMechanicId
-    };
-
-    const { vehicleId, customerId, complaint, priority, expectedDelivery, assignedMechanicId } = visitSchema.parse(mappedData);
-    
     const branch = await prisma.branch.findFirst();
     const branchId = req.user?.branchId || branch?.id;
 
@@ -160,12 +172,69 @@ export const createVisit = async (req: Request, res: Response) => {
       return res.status(400).json({ message: 'Branch ID is missing.' });
     }
 
+    const { 
+      regNo, 
+      complaint, 
+      mileage, 
+      customerName, 
+      customerPhone, 
+      customerId: existingCustomerId,
+      priority, 
+      expectedDelivery, 
+      assignedMechanicId 
+    } = visitSchema.parse(req.body);
+    
+    // 1. Handle Customer
+    let customerId = existingCustomerId;
+    if (!customerId) {
+      // Find or create customer by phone in this branch
+      const customer = await prisma.customer.upsert({
+        where: { 
+          phone_branchId: {
+            phone: customerPhone || 'UNKNOWN',
+            branchId
+          }
+        },
+        update: {},
+        create: {
+          name: customerName || 'Unknown Customer',
+          phone: customerPhone || 'UNKNOWN',
+          branchId
+        }
+      });
+      customerId = customer.id;
+    }
+
+    // 2. Handle Vehicle
+    const vehicle = await prisma.vehicle.upsert({
+      where: {
+        regNo_branchId: {
+          regNo,
+          branchId
+        }
+      },
+      update: {
+        mileage,
+        customerId
+      },
+      create: {
+        regNo,
+        make: 'Unknown',
+        model: 'Unknown',
+        year: new Date().getFullYear(),
+        mileage,
+        customerId,
+        branchId
+      }
+    });
+
     const visit = await prisma.visit.create({
       data: {
-        vehicleId,
+        vehicleId: vehicle.id,
         customerId,
-        branchId: branchId,
+        branchId,
         complaint,
+        mileage,
         priority,
         expectedDelivery: expectedDelivery ? new Date(expectedDelivery) : null,
         assignedMechanicId,
@@ -185,10 +254,10 @@ export const createVisit = async (req: Request, res: Response) => {
 export const updateVisit = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
-    const { status, complaint, priority, expectedDelivery, assignedMechanicId, discountAmount, discountType, taxRate } = updateVisitSchema.parse(req.body);
+    const { status, complaint, mileage, priority, expectedDelivery, assignedMechanicId, discountAmount, discountType, taxRate } = updateVisitSchema.parse(req.body);
 
     if (req.user?.role === 'Mechanic') {
-      if (discountAmount || discountType || taxRate) {
+      if (discountAmount !== undefined || discountType !== undefined || taxRate !== undefined) {
         return res.status(403).json({ message: 'Mechanics are not authorized to update pricing information.' });
       }
     }
@@ -198,6 +267,7 @@ export const updateVisit = async (req: Request, res: Response) => {
       data: {
         status,
         complaint,
+        mileage,
         priority,
         expectedDelivery: expectedDelivery ? new Date(expectedDelivery) : null,
         assignedMechanicId,
@@ -219,14 +289,14 @@ export const updateVisit = async (req: Request, res: Response) => {
 export const addLaborItem = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
-    const { title, hours, rate } = laborItemSchema.parse(req.body);
-    const subtotal = hours * rate;
+    const { title, hours, ratePerHour } = laborItemSchema.parse(req.body);
+    const subtotal = hours * ratePerHour;
     const laborItem = await prisma.laborItem.create({
       data: {
         visitId: id,
         title,
         hours,
-        rate,
+        ratePerHour,
         subtotal,
       },
     });
@@ -291,6 +361,44 @@ export const deletePartItem = async (req: Request, res: Response) => {
     where: { id },
   });
   await recalculateTotals(partItem.visitId);
+  res.status(204).send();
+};
+
+export const addOutsideWorkItem = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const { vendorName, workDescription, cost, notes } = outsideWorkItemSchema.parse(req.body);
+    const item = await prisma.outsideWorkItem.create({
+      data: {
+        visitId: id,
+        vendorName,
+        workDescription,
+        cost,
+        notes,
+      },
+    });
+    await recalculateTotals(id);
+    res.status(201).json(item);
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      return res.status(400).json({ message: 'Invalid input.', details: error.issues });
+    }
+    res.status(500).json({ message: 'An unexpected error occurred.' });
+  }
+};
+
+export const deleteOutsideWorkItem = async (req: Request, res: Response) => {
+  const { id } = req.params;
+  const item = await prisma.outsideWorkItem.findUnique({
+    where: { id },
+  });
+  if (!item) {
+    return res.status(404).json({ message: 'Outside work item not found.' });
+  }
+  await prisma.outsideWorkItem.delete({
+    where: { id },
+  });
+  await recalculateTotals(item.visitId);
   res.status(204).send();
 };
 
