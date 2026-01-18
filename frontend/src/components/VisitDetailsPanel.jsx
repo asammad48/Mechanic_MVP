@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Box, Typography, TextField, Button, Grid, Select, MenuItem, InputLabel, FormControl, Divider, List, ListItem, ListItemText, Paper, Stack } from '@mui/material';
 import { Print as PrintIcon } from '@mui/icons-material';
 import { jsPDF } from 'jspdf';
-import 'jspdf-autotable';
+import autoTable from 'jspdf-autotable';
 import api from '../services/api';
 
 const VisitDetailsPanel = ({ visitId, onUpdate }) => {
@@ -138,7 +138,7 @@ const VisitDetailsPanel = ({ visitId, onUpdate }) => {
     });
 
     if (tableData.length > 0) {
-      doc.autoTable({
+      autoTable(doc, {
         startY: currentY,
         head: [['Description', 'Type', 'Qty', 'Unit Price', 'Amount']],
         body: tableData,
