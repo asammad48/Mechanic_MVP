@@ -57,12 +57,13 @@ const UsersPage = () => {
     setLoading(true);
     setError(null);
     try {
+      const isAdmin = currentUser?.isSuperAdmin || (typeof currentUser?.role === 'object' ? currentUser?.role?.name : currentUser?.role) === 'Owner/Admin';
       const [usersRes, branchesRes] = await Promise.all([
         api.get('/users'),
-        currentUser?.isSuperAdmin ? api.get('/branches') : Promise.resolve({ data: [] })
+        isAdmin ? api.get('/branches') : Promise.resolve({ data: [] })
       ]);
       setUsers(usersRes.data);
-      if (currentUser?.isSuperAdmin) {
+      if (isAdmin) {
         setBranches(branchesRes.data);
       }
     } catch (err) {
@@ -95,7 +96,8 @@ const UsersPage = () => {
     setIsResetModalOpen(true);
   };
 
-  const canCreateUser = currentUser?.isSuperAdmin || currentUser?.role === 'Manager' || currentUser?.role === 'Owner/Admin';
+  const userRole = typeof currentUser?.role === 'object' ? currentUser?.role?.name : currentUser?.role;
+  const canCreateUser = currentUser?.isSuperAdmin || userRole === 'Manager' || userRole === 'Owner/Admin';
 
   const filteredUsers = users.filter((user) => {
     const matchesSearch = 
