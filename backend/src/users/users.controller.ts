@@ -45,3 +45,11 @@ export const getBranches = async (req: Request, res: Response) => {
   });
   res.json(branches);
 };
+
+export const updateUser = async (req: Request, res: Response) => {
+  res.json({ message: 'updateUser not implemented' });
+};
+
+export const resetPassword = async (req: Request, res: Response) => {
+  res.json({ message: 'resetPassword not implemented' });
+};
