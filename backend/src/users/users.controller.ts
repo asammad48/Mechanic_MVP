@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import prisma from '../lib/prisma';
 import bcrypt from 'bcrypt';
 import { z } from 'zod';
+import { getEffectiveBranchId } from '../middleware/branch.middleware';
 
 const userQuerySchema = z.object({
   search: z.string().optional(),
@@ -37,11 +38,37 @@ const resetPasswordSchema = z.object({
 export const getUsers = async (req: Request, res: Response) => {
   try {
     const query = userQuerySchema.parse(req.query);
-    // Logic for filtering will be implemented in next task, for now just returning all
+    const effectiveBranchId = getEffectiveBranchId(req);
+
+    const where: any = {};
+
+    if (effectiveBranchId) {
+      where.branchId = effectiveBranchId;
+    } else if (query.branchId) {
+      where.branchId = query.branchId;
+    }
+
+    if (query.roleId) {
+      where.roleId = query.roleId;
+    }
+
+    if (query.isActive !== undefined) {
+      where.isActive = query.isActive;
+    }
+
+    if (query.search) {
+      where.OR = [
+        { name: { contains: query.search, mode: 'insensitive' } },
+        { email: { contains: query.search, mode: 'insensitive' } },
+      ];
+    }
+
     const users = await prisma.user.findMany({
+      where,
       include: { role: true, branch: true },
+      orderBy: { createdAt: 'desc' }
     });
-    // Remove sensitive data
+
     const safeUsers = users.map(({ password_hash, ...user }) => user);
     res.json(safeUsers);
   } catch (error) {
@@ -55,9 +82,21 @@ export const getUsers = async (req: Request, res: Response) => {
 export const createUser = async (req: Request, res: Response) => {
   try {
     const validated = createUserSchema.parse(req.body);
+    
+    // RBAC: Non-super admin cannot create super admin
+    if (!req.user?.isSuperAdmin && validated.isSuperAdmin) {
+      return res.status(403).json({ message: 'Only super admins can create other super admins.' });
+    }
+
+    // Branch Scoping: Non-super admin must create in their branch
+    const branchId = req.user?.isSuperAdmin ? validated.branchId : req.user?.branchId;
+    
+    if (!req.user?.isSuperAdmin && validated.branchId && validated.branchId !== req.user?.branchId) {
+      return res.status(403).json({ message: 'Cannot create user in another branch.' });
+    }
+
     const password_hash = await bcrypt.hash(validated.password, 10);
     
-    // Check if email already exists
     const existing = await prisma.user.findUnique({ where: { email: validated.email } });
     if (existing) {
       return res.status(409).json({ message: 'Email already exists.' });
@@ -69,7 +108,7 @@ export const createUser = async (req: Request, res: Response) => {
         email: validated.email,
         password_hash,
         roleId: validated.roleId,
-        branchId: validated.branchId,
+        branchId: branchId || null,
         isSuperAdmin: validated.isSuperAdmin,
       },
       include: { role: true, branch: true },
@@ -86,6 +125,92 @@ export const createUser = async (req: Request, res: Response) => {
   }
 };
 
+export const updateUser = async (req: Request, res: Response) => {
+  try {
+    const validated = updateUserSchema.parse(req.body);
+    const { id } = req.params;
+    
+    const targetUser = await prisma.user.findUnique({ where: { id } });
+    if (!targetUser) {
+      return res.status(404).json({ message: 'User not found.' });
+    }
+
+    // RBAC: Non-super cannot modify super
+    if (!req.user?.isSuperAdmin && targetUser.isSuperAdmin) {
+      return res.status(403).json({ message: 'Cannot modify super admin users.' });
+    }
+
+    // Branch Scoping: Non-super cannot modify across branches
+    if (!req.user?.isSuperAdmin && targetUser.branchId !== req.user?.branchId) {
+      return res.status(403).json({ message: 'Cannot modify users in other branches.' });
+    }
+
+    // Self-Protection: Block deactivating yourself
+    if (id === req.user?.id && validated.isActive === false) {
+      return res.status(400).json({ message: 'You cannot deactivate your own account.' });
+    }
+
+    // Self-Protection: Block changing own role unless super admin
+    if (id === req.user?.id && validated.roleId && !req.user?.isSuperAdmin) {
+      return res.status(403).json({ message: 'You cannot change your own role.' });
+    }
+
+    // Branch Scoping: Non-super cannot change branchId
+    if (!req.user?.isSuperAdmin && validated.branchId && validated.branchId !== req.user?.branchId) {
+      return res.status(403).json({ message: 'You cannot move users to another branch.' });
+    }
+
+    const updatedUser = await prisma.user.update({
+      where: { id },
+      data: validated,
+      include: { role: true, branch: true }
+    });
+
+    const { password_hash, ...safeUser } = updatedUser;
+    res.json(safeUser);
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      return res.status(400).json({ message: 'Invalid input.', details: error.issues });
+    }
+    console.error('Update user error:', error);
+    res.status(500).json({ message: 'An unexpected error occurred.' });
+  }
+};
+
+export const resetPassword = async (req: Request, res: Response) => {
+  try {
+    const validated = resetPasswordSchema.parse(req.body);
+    const { id } = req.params;
+
+    const targetUser = await prisma.user.findUnique({ where: { id } });
+    if (!targetUser) {
+      return res.status(404).json({ message: 'User not found.' });
+    }
+
+    // RBAC & Branch Scoping same as update
+    if (!req.user?.isSuperAdmin && targetUser.isSuperAdmin) {
+      return res.status(403).json({ message: 'Cannot reset password for super admin users.' });
+    }
+    if (!req.user?.isSuperAdmin && targetUser.branchId !== req.user?.branchId) {
+      return res.status(403).json({ message: 'Cannot reset password for users in other branches.' });
+    }
+
+    const password_hash = await bcrypt.hash(validated.newPassword, 10);
+    await prisma.user.update({
+      where: { id },
+      data: { password_hash }
+    });
+
+    res.json({ message: 'Password reset successfully.' });
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      return res.status(400).json({ message: 'Invalid input.', details: error.issues });
+    }
+    console.error('Reset password error:', error);
+    res.status(500).json({ message: 'An unexpected error occurred.' });
+  }
+};
+
 export const getRoles = async (req: Request, res: Response) => {
   const roles = await prisma.role.findMany();
   res.json(roles);
@@ -96,34 +221,4 @@ export const getBranches = async (req: Request, res: Response) => {
     where: { isActive: true }
   });
   res.json(branches);
-};
-
-export const updateUser = async (req: Request, res: Response) => {
-  try {
-    const validated = updateUserSchema.parse(req.body);
-    const { id } = req.params;
-    
-    // Placeholder implementation for next task
-    res.json({ message: 'updateUser logic not fully implemented yet', data: validated, userId: id });
-  } catch (error) {
-    if (error instanceof z.ZodError) {
-      return res.status(400).json({ message: 'Invalid input.', details: error.issues });
-    }
-    res.status(500).json({ message: 'An unexpected error occurred.' });
-  }
-};
-
-export const resetPassword = async (req: Request, res: Response) => {
-  try {
-    const validated = resetPasswordSchema.parse(req.body);
-    const { id } = req.params;
-
-    // Placeholder implementation for next task
-    res.json({ message: 'resetPassword logic not fully implemented yet', userId: id });
-  } catch (error) {
-    if (error instanceof z.ZodError) {
-      return res.status(400).json({ message: 'Invalid input.', details: error.issues });
-    }
-    res.status(500).json({ message: 'An unexpected error occurred.' });
-  }
 };
