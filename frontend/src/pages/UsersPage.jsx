@@ -269,7 +269,7 @@ const UsersPage = () => {
                       color={user.role === 'Owner/Admin' ? 'primary' : 'default'}
                     />
                   </TableCell>
-                  <TableCell>{user.branch?.name || 'N/A'}</TableCell>
+                  <TableCell>{typeof user.branch === 'object' ? user.branch?.name : (user.branch || 'N/A')}</TableCell>
                   <TableCell>
                     <Chip
                       label={user.isActive ? 'Active' : 'Inactive'}
