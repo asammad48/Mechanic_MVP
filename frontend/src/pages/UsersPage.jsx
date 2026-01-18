@@ -25,10 +25,14 @@ import {
   Search as SearchIcon,
   FilterList as FilterIcon,
   Add as AddIcon,
+  Edit as EditIcon,
+  LockReset as ResetIcon,
 } from '@mui/icons-material';
 import api from '../services/api';
 import { useAuth } from '../contexts/AuthContext';
 import NewUserModal from '../components/NewUserModal';
+import EditUserModal from '../components/EditUserModal';
+import ResetPasswordModal from '../components/ResetPasswordModal';
 
 const UsersPage = () => {
   const { user: currentUser } = useAuth();
@@ -37,6 +41,9 @@ const UsersPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isResetModalOpen, setIsResetModalOpen] = useState(false);
+  const [selectedUser, setSelectedUser] = useState(null);
 
   // Filter states
   const [search, setSearch] = useState('');
@@ -70,6 +77,20 @@ const UsersPage = () => {
 
   const handleUserCreated = (newUser) => {
     setUsers(prev => [newUser, ...prev]);
+  };
+
+  const handleUserUpdated = (updatedUser) => {
+    setUsers(prev => prev.map(u => u.id === updatedUser.id ? updatedUser : u));
+  };
+
+  const handleEditClick = (user) => {
+    setSelectedUser(user);
+    setIsEditModalOpen(true);
+  };
+
+  const handleResetClick = (user) => {
+    setSelectedUser(user);
+    setIsResetModalOpen(true);
   };
 
   const canCreateUser = currentUser?.isSuperAdmin || currentUser?.role === 'Manager' || currentUser?.role === 'Owner/Admin';
@@ -116,6 +137,27 @@ const UsersPage = () => {
         onUserCreated={handleUserCreated}
         currentUser={currentUser}
         branches={branches}
+      />
+
+      <EditUserModal
+        open={isEditModalOpen}
+        handleClose={() => {
+            setIsEditModalOpen(false);
+            setSelectedUser(null);
+        }}
+        onUserUpdated={handleUserUpdated}
+        currentUser={currentUser}
+        userToEdit={selectedUser}
+        branches={branches}
+      />
+
+      <ResetPasswordModal
+        open={isResetModalOpen}
+        handleClose={() => {
+            setIsResetModalOpen(false);
+            setSelectedUser(null);
+        }}
+        userToReset={selectedUser}
       />
 
       {error && (
@@ -198,12 +240,13 @@ const UsersPage = () => {
               <TableCell sx={{ fontWeight: 700 }}>Role</TableCell>
               <TableCell sx={{ fontWeight: 700 }}>Branch</TableCell>
               <TableCell sx={{ fontWeight: 700 }}>Status</TableCell>
+              <TableCell sx={{ fontWeight: 700 }} align="right">Actions</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
             {filteredUsers.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={5} align="center" sx={{ py: 8 }}>
+                <TableCell colSpan={6} align="center" sx={{ py: 8 }}>
                   <Typography color="text.secondary">
                     {search || roleFilter !== 'all' || statusFilter !== 'all' || branchFilter !== 'all'
                       ? 'No users found matching filters'
@@ -231,6 +274,26 @@ const UsersPage = () => {
                       size="small"
                       color={user.isActive ? 'success' : 'error'}
                     />
+                  </TableCell>
+                  <TableCell align="right">
+                    <Stack direction="row" spacing={1} justifyContent="flex-end">
+                      <IconButton 
+                        size="small" 
+                        onClick={() => handleEditClick(user)}
+                        title="Edit User"
+                        color="primary"
+                      >
+                        <EditIcon fontSize="small" />
+                      </IconButton>
+                      <IconButton 
+                        size="small" 
+                        onClick={() => handleResetClick(user)}
+                        title="Reset Password"
+                        color="warning"
+                      >
+                        <ResetIcon fontSize="small" />
+                      </IconButton>
+                    </Stack>
                   </TableCell>
                 </TableRow>
               ))
