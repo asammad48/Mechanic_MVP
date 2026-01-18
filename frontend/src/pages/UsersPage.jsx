@@ -263,10 +263,10 @@ const UsersPage = () => {
                   <TableCell>{user.email}</TableCell>
                   <TableCell>
                     <Chip 
-                      label={user.role} 
+                      label={typeof user.role === 'object' ? user.role?.name : (user.role || 'N/A')} 
                       size="small" 
                       variant="outlined" 
-                      color={user.role === 'Owner/Admin' ? 'primary' : 'default'}
+                      color={(typeof user.role === 'object' ? user.role?.name : user.role) === 'Owner/Admin' ? 'primary' : 'default'}
                     />
                   </TableCell>
                   <TableCell>{typeof user.branch === 'object' ? user.branch?.name : (user.branch || 'N/A')}</TableCell>

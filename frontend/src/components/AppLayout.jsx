@@ -184,7 +184,9 @@ const AppLayout = () => {
               </Avatar>
               <Box sx={{ display: { xs: 'none', sm: 'block' } }}>
                 <Typography variant="subtitle2" sx={{ fontWeight: 700, lineHeight: 1.2 }}>{user?.name}</Typography>
-                <Typography variant="caption" sx={{ color: 'text.secondary' }}>{user?.role}</Typography>
+                <Typography variant="caption" sx={{ color: 'text.secondary' }}>
+                  {typeof user?.role === 'object' ? user?.role?.name : user?.role}
+                </Typography>
               </Box>
             </Stack>
           </Stack>
