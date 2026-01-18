@@ -342,9 +342,6 @@ const AnalyticsPage = () => {
         </>
       )}
     </Box>
-        </>
-      )}
-    </Box>
   );
 };
 
