@@ -239,16 +239,16 @@ const AnalyticsPage = () => {
         <>
           {/* KPI Summary Cards */}
           <Grid container spacing={3} mb={6}>
-            <Grid item xs={12} sm={6} md={3}>
+            <Grid item xs={12} md={6}>
               <StatCard title="Total Revenue" value={`Rs. ${summary?.totalRevenue?.toLocaleString() || 0}`} subtext="Gross earnings in period" icon={TrendingUp} color="primary" />
             </Grid>
-            <Grid item xs={12} sm={6} md={3}>
+            <Grid item xs={12} md={6}>
               <StatCard title="Visits Completed" value={summary?.deliveredCount || 0} subtext="Successfully delivered" icon={CheckCircle} color="success" />
             </Grid>
-            <Grid item xs={12} sm={6} md={3}>
+            <Grid item xs={12} md={6}>
               <StatCard title="Outstanding Balance" value={`Rs. ${summary?.unpaidAmount?.toLocaleString() || 0}`} subtext="Total unpaid amount" icon={AccountBalanceWallet} color="warning" />
             </Grid>
-            <Grid item xs={12} sm={6} md={3}>
+            <Grid item xs={12} md={6}>
               <StatCard title="Average Ticket" value={`Rs. ${Math.round(summary?.avgTicketSize || 0).toLocaleString()}`} subtext="Revenue per visit" icon={Receipt} color="info" />
             </Grid>
           </Grid>
