@@ -58,17 +58,17 @@ const AnalyticsSnapshot = () => {
           {title}
         </Typography>
         <Typography variant="h4" sx={{ mb: 2, fontWeight: 700 }}>
-          ${data.total_revenue.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+          ${(data?.total_revenue || 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}
         </Typography>
         <Stack direction="row" spacing={3}>
           <Box>
             <Typography variant="caption" color="text.secondary" display="block">Visits</Typography>
-            <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>{data.total_visits}</Typography>
+            <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>{data?.total_visits || 0}</Typography>
           </Box>
           <Box>
             <Typography variant="caption" color="text.secondary" display="block">Unpaid</Typography>
             <Typography variant="subtitle2" color="error.main" sx={{ fontWeight: 700 }}>
-              ${data.unpaid_amount.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+              ${(data?.unpaid_amount || 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}
             </Typography>
           </Box>
         </Stack>
