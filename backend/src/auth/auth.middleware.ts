@@ -7,18 +7,7 @@ interface JwtPayload {
   userId: string;
 }
 
-// Extend the Express Request interface to include the user object
-declare global {
-  namespace Express {
-    interface Request {
-      user?: {
-        id: string;
-        role: string;
-        branchId?: string | null;
-      };
-    }
-  }
-}
+// Extend the Express Request interface is now done in types/express/index.d.ts
 
 export const authenticate = async (req: Request, res: Response, next: NextFunction) => {
   const authHeader = req.headers.authorization;
@@ -40,7 +29,13 @@ export const authenticate = async (req: Request, res: Response, next: NextFuncti
       return res.status(401).json({ message: 'Authentication invalid.' });
     }
 
-    req.user = { id: user.id, role: user.role.name };
+    req.user = {
+      id: user.id,
+      role: user.role.name,
+      roleId: user.roleId,
+      branchId: user.branchId,
+      isSuperAdmin: user.isSuperAdmin
+    };
     next();
   } catch (error) {
     return res.status(401).json({ message: 'Authentication invalid.' });
