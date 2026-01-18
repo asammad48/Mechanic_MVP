@@ -122,45 +122,44 @@ const AnalyticsPage = () => {
   if (error) return <Box p={3}><Alert severity="error">{error}</Alert></Box>;
 
   return (
-    <Box sx={{ p: { xs: 1, md: 3 }, maxWidth: 1600, mx: 'auto' }}>
+    <Box sx={{ p: { xs: 2, md: 4 }, maxWidth: 1600, mx: 'auto', bgcolor: 'background.default', minHeight: '100vh' }}>
       <Stack direction={{ xs: 'column', sm: 'row' }} justifyContent="space-between" alignItems={{ xs: 'flex-start', sm: 'center' }} spacing={2} mb={4}>
         <Box>
-          <Typography variant="h4" sx={{ fontWeight: 800, color: 'text.primary' }}>Analytics Dashboard</Typography>
-          <Typography variant="subtitle1" color="text.secondary">Monitor your business performance and trends</Typography>
+          <Typography variant="h4" sx={{ fontWeight: 800, color: 'text.primary', letterSpacing: '-0.5px' }}>Analytics Dashboard</Typography>
+          <Typography variant="subtitle1" color="text.secondary">Comprehensive business performance overview</Typography>
         </Box>
-        <Stack direction="row" spacing={1}>
-          <Button startIcon={<FilterList />} variant="outlined" size="small">Export Report</Button>
-        </Stack>
+        <Button startIcon={<FilterList />} variant="contained" size="large" sx={{ borderRadius: 2, px: 3 }}>
+          Export Report
+        </Button>
       </Stack>
       
-      {/* Enhanced Filters Bar */}
-      <Paper elevation={0} sx={{ p: 2, mb: 4, border: '1px solid', borderColor: 'divider', borderRadius: 2 }}>
-        <Grid container spacing={2} alignItems="center">
+      {/* Filters Bar */}
+      <Paper elevation={0} sx={{ p: 2.5, mb: 4, border: '1px solid', borderColor: 'divider', borderRadius: 3, bgcolor: 'background.paper' }}>
+        <Grid container spacing={3} alignItems="center">
           <Grid item xs={12} lg={4}>
-            <Stack direction="row" spacing={1}>
-              <Box sx={{ bgcolor: 'action.hover', p: 0.5, borderRadius: 2, display: 'flex' }}>
-                {['7d', '30d', '90d', '12m'].map(r => (
-                  <Button 
-                    key={r} 
-                    onClick={() => { setRange(r); setDateFrom(''); setDateTo(''); }}
-                    variant={range === r ? 'contained' : 'text'}
-                    size="small"
-                    sx={{ 
-                      minWidth: 60,
-                      borderRadius: 1.5,
-                      textTransform: 'uppercase',
-                      fontWeight: range === r ? 700 : 400,
-                      boxShadow: range === r ? 1 : 0
-                    }}
-                  >
-                    {r}
-                  </Button>
-                ))}
-              </Box>
-            </Stack>
+            <Box sx={{ bgcolor: 'action.hover', p: 0.75, borderRadius: 2.5, display: 'flex', width: 'fit-content' }}>
+              {['7d', '30d', '90d', '12m'].map(r => (
+                <Button 
+                  key={r} 
+                  onClick={() => { setRange(r); setDateFrom(''); setDateTo(''); }}
+                  variant={range === r ? 'contained' : 'text'}
+                  size="small"
+                  sx={{ 
+                    minWidth: 70,
+                    borderRadius: 2,
+                    textTransform: 'uppercase',
+                    fontWeight: range === r ? 700 : 500,
+                    boxShadow: range === r ? 2 : 0,
+                    color: range === r ? 'primary.contrastText' : 'text.secondary'
+                  }}
+                >
+                  {r}
+                </Button>
+              ))}
+            </Box>
           </Grid>
           
-          <Grid item xs={12} sm={6} md={3} lg={2}>
+          <Grid item xs={12} sm={4} lg={2}>
             <TextField 
               type="date" 
               label="From" 
@@ -171,7 +170,7 @@ const AnalyticsPage = () => {
               sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
             />
           </Grid>
-          <Grid item xs={12} sm={6} md={3} lg={2}>
+          <Grid item xs={12} sm={4} lg={2}>
             <TextField 
               type="date" 
               label="To" 
@@ -182,21 +181,20 @@ const AnalyticsPage = () => {
               sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
             />
           </Grid>
-          <Grid item xs={12} md={2} lg={1}>
+          <Grid item xs={12} sm={4} lg={1}>
             <Button 
               variant="contained" 
               onClick={handleManualFilter} 
               fullWidth 
-              size="medium"
               disabled={!dateFrom || !dateTo}
-              sx={{ borderRadius: 2, fontWeight: 700 }}
+              sx={{ borderRadius: 2, fontWeight: 700, py: 1 }}
             >
               Apply
             </Button>
           </Grid>
 
           {user?.isSuperAdmin && (
-            <Grid item xs={12} md={4} lg={3}>
+            <Grid item xs={12} lg={3}>
               <FormControl fullWidth size="small">
                 <InputLabel>View Branch</InputLabel>
                 <Select
@@ -225,209 +223,125 @@ const AnalyticsPage = () => {
       </Paper>
 
       {loading ? (
-        <Box display="flex" flexDirection="column" alignItems="center" justifyContent="center" py={10} gap={2}>
-          <CircularProgress thickness={4} size={50} />
-          <Typography color="text.secondary" variant="subtitle2">Analyzing data...</Typography>
+        <Box display="flex" flexDirection="column" alignItems="center" justifyContent="center" py={15} gap={3}>
+          <CircularProgress thickness={4} size={60} />
+          <Typography color="text.secondary" variant="h6" fontWeight={500}>Generating Insights...</Typography>
         </Box>
       ) : (
         <>
-          {/* Enhanced KPI Cards */}
-          <Grid container spacing={3} mb={4}>
+          {/* KPI Summary Cards */}
+          <Grid container spacing={3} mb={6}>
             <Grid item xs={12} sm={6} md={3}>
-              <StatCard 
-                title="Total Revenue" 
-                value={`Rs. ${summary?.totalRevenue?.toLocaleString() || 0}`}
-                subtext="Gross earnings in period"
-                icon={TrendingUp}
-                color="primary"
-              />
+              <StatCard title="Total Revenue" value={`Rs. ${summary?.totalRevenue?.toLocaleString() || 0}`} subtext="Gross earnings in period" icon={TrendingUp} color="primary" />
             </Grid>
             <Grid item xs={12} sm={6} md={3}>
-              <StatCard 
-                title="Visits Completed" 
-                value={summary?.deliveredCount || 0}
-                subtext="Successfully delivered"
-                icon={CheckCircle}
-                color="success"
-              />
+              <StatCard title="Visits Completed" value={summary?.deliveredCount || 0} subtext="Successfully delivered" icon={CheckCircle} color="success" />
             </Grid>
             <Grid item xs={12} sm={6} md={3}>
-              <StatCard 
-                title="Outstanding Balance" 
-                value={`Rs. ${summary?.unpaidAmount?.toLocaleString() || 0}`}
-                subtext="Total unpaid amount"
-                icon={AccountBalanceWallet}
-                color="warning"
-              />
+              <StatCard title="Outstanding Balance" value={`Rs. ${summary?.unpaidAmount?.toLocaleString() || 0}`} subtext="Total unpaid amount" icon={AccountBalanceWallet} color="warning" />
             </Grid>
             <Grid item xs={12} sm={6} md={3}>
-              <StatCard 
-                title="Average Ticket" 
-                value={`Rs. ${Math.round(summary?.avgTicketSize || 0).toLocaleString()}`}
-                subtext="Revenue per visit"
-                icon={Receipt}
-                color="info"
-              />
+              <StatCard title="Average Ticket" value={`Rs. ${Math.round(summary?.avgTicketSize || 0).toLocaleString()}`} subtext="Revenue per visit" icon={Receipt} color="info" />
             </Grid>
           </Grid>
 
-          {/* Enhanced Charts Section */}
-          <Grid container spacing={3}>
-            {/* Visit Traffic */}
-            <Grid item xs={12} md={6}>
-              <Card sx={{ borderRadius: 2, height: '100%' }}>
-                <CardContent>
-                  <Typography variant="h6" sx={{ fontWeight: 700, mb: 3 }}>Visit Traffic</Typography>
-                  <Box height={350}>
-                    <ResponsiveContainer width="100%" height="100%">
+          {/* Main Charts - Responsive Grid System */}
+          <Box sx={{ flexGrow: 1 }}>
+            <Grid container spacing={4}>
+              {/* Row 1: Visit Traffic & Top Mechanics */}
+              <Grid item xs={12} md={6}>
+                <Paper elevation={0} sx={{ p: 3, borderRadius: 4, border: '1px solid', borderColor: 'divider', height: '100%' }}>
+                  <Typography variant="h6" sx={{ fontWeight: 700, mb: 4, display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <CalendarToday fontSize="small" color="primary" /> Visit Traffic
+                  </Typography>
+                  <Box sx={{ width: '100%', height: 350 }}>
+                    <ResponsiveContainer>
                       <BarChart data={revenueTrend}>
                         <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={theme.palette.divider} />
-                        <XAxis dataKey="label" axisLine={false} tickLine={false} />
-                        <YAxis axisLine={false} tickLine={false} />
-                        <Tooltip cursor={{ fill: theme.palette.action.hover }} />
-                        <Bar 
-                          dataKey="visits" 
-                          fill={theme.palette.info.main} 
-                          radius={[4, 4, 0, 0]} 
-                          name="Visits" 
-                        />
+                        <XAxis dataKey="label" axisLine={false} tickLine={false} tick={{ fontSize: 11 }} />
+                        <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 11 }} />
+                        <Tooltip contentStyle={{ borderRadius: 12, border: 'none', boxShadow: theme.shadows[3] }} />
+                        <Bar dataKey="visits" fill={theme.palette.primary.main} radius={[6, 6, 0, 0]} barSize={40} />
                       </BarChart>
                     </ResponsiveContainer>
                   </Box>
-                </CardContent>
-              </Card>
-            </Grid>
+                </Paper>
+              </Grid>
 
-            {/* Top Performing Mechanics */}
-            <Grid item xs={12} md={6}>
-              <Card sx={{ borderRadius: 2, height: '100%' }}>
-                <CardContent>
-                  <Typography variant="h6" sx={{ fontWeight: 700, mb: 3 }}>Top Performing Mechanics</Typography>
-                  <Box height={350}>
-                    <ResponsiveContainer width="100%" height="100%">
-                      <BarChart data={topMechanics} layout="vertical">
+              <Grid item xs={12} md={6}>
+                <Paper elevation={0} sx={{ p: 3, borderRadius: 4, border: '1px solid', borderColor: 'divider', height: '100%' }}>
+                  <Typography variant="h6" sx={{ fontWeight: 700, mb: 4 }}>Top Mechanics</Typography>
+                  <Box sx={{ width: '100%', height: 350 }}>
+                    <ResponsiveContainer>
+                      <BarChart data={topMechanics} layout="vertical" margin={{ left: 20 }}>
                         <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke={theme.palette.divider} />
-                        <XAxis type="number" axisLine={false} tickLine={false} />
-                        <YAxis 
-                          dataKey="mechanicName" 
-                          type="category" 
-                          width={120} 
-                          axisLine={false} 
-                          tickLine={false} 
-                          tick={{ fontSize: 12 }}
-                        />
-                        <Tooltip />
-                        <Bar 
-                          dataKey="revenue" 
-                          fill={theme.palette.secondary.main} 
-                          radius={[0, 4, 4, 0]} 
-                          name="Revenue (Rs.)" 
-                        />
+                        <XAxis type="number" axisLine={false} tickLine={false} tick={{ fontSize: 11 }} />
+                        <YAxis dataKey="mechanicName" type="category" axisLine={false} tickLine={false} tick={{ fontSize: 11 }} width={100} />
+                        <Tooltip contentStyle={{ borderRadius: 12, border: 'none', boxShadow: theme.shadows[3] }} />
+                        <Bar dataKey="revenue" fill={theme.palette.success.main} radius={[0, 6, 6, 0]} barSize={25} />
                       </BarChart>
                     </ResponsiveContainer>
                   </Box>
-                </CardContent>
-              </Card>
-            </Grid>
+                </Paper>
+              </Grid>
 
-            {/* Performance Outlook (Revenue Trend) */}
-            <Grid item xs={12} md={6}>
-              <Card sx={{ borderRadius: 2, height: '100%' }}>
-                <CardContent>
-                  <Stack direction="row" justifyContent="space-between" alignItems="center" mb={3}>
+              {/* Row 2: Performance Outlook & Operational Status */}
+              <Grid item xs={12} md={6}>
+                <Paper elevation={0} sx={{ p: 3, borderRadius: 4, border: '1px solid', borderColor: 'divider', height: '100%' }}>
+                  <Stack direction="row" justifyContent="space-between" alignItems="center" mb={4}>
                     <Typography variant="h6" sx={{ fontWeight: 700 }}>Performance Outlook</Typography>
-                    <Typography variant="caption" color="text.secondary">Revenue vs Unpaid (Trend)</Typography>
+                    <Typography variant="caption" sx={{ px: 1.5, py: 0.5, bgcolor: 'primary.lighter', color: 'primary.main', borderRadius: 1, fontWeight: 700 }}>REVENUE TREND</Typography>
                   </Stack>
-                  <Box height={350}>
-                    <ResponsiveContainer width="100%" height="100%">
-                      <AreaChart data={revenueTrend} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
+                  <Box sx={{ width: '100%', height: 350 }}>
+                    <ResponsiveContainer>
+                      <AreaChart data={revenueTrend}>
                         <defs>
-                          <linearGradient id="colorRev" x1="0" y1="0" x2="0" y2="1">
-                            <stop offset="5%" stopColor={theme.palette.primary.main} stopOpacity={0.3}/>
+                          <linearGradient id="gradRev" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="5%" stopColor={theme.palette.primary.main} stopOpacity={0.2}/>
                             <stop offset="95%" stopColor={theme.palette.primary.main} stopOpacity={0}/>
-                          </linearGradient>
-                          <linearGradient id="colorUnpaid" x1="0" y1="0" x2="0" y2="1">
-                            <stop offset="5%" stopColor={theme.palette.warning.main} stopOpacity={0.3}/>
-                            <stop offset="95%" stopColor={theme.palette.warning.main} stopOpacity={0}/>
                           </linearGradient>
                         </defs>
                         <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={theme.palette.divider} />
-                        <XAxis 
-                          dataKey="label" 
-                          axisLine={false} 
-                          tickLine={false} 
-                          tick={{ fontSize: 12, fill: theme.palette.text.secondary }}
-                        />
-                        <YAxis 
-                          axisLine={false} 
-                          tickLine={false} 
-                          tick={{ fontSize: 12, fill: theme.palette.text.secondary }}
-                          tickFormatter={(value) => `Rs.${value > 1000 ? `${(value/1000).toFixed(0)}k` : value}`}
-                        />
-                        <Tooltip 
-                          contentStyle={{ 
-                            borderRadius: '8px', 
-                            border: 'none', 
-                            boxShadow: theme.shadows[3],
-                            backgroundColor: theme.palette.background.paper
-                          }}
-                        />
-                        <Area 
-                          type="monotone" 
-                          dataKey="revenue" 
-                          stroke={theme.palette.primary.main} 
-                          strokeWidth={3}
-                          fillOpacity={1} 
-                          fill="url(#colorRev)" 
-                          name="Revenue" 
-                        />
-                        <Area 
-                          type="monotone" 
-                          dataKey="unpaid" 
-                          stroke={theme.palette.warning.main} 
-                          strokeWidth={3}
-                          fillOpacity={1} 
-                          fill="url(#colorUnpaid)" 
-                          name="Outstanding" 
-                        />
+                        <XAxis dataKey="label" axisLine={false} tickLine={false} tick={{ fontSize: 11 }} />
+                        <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 11 }} />
+                        <Tooltip contentStyle={{ borderRadius: 12, border: 'none', boxShadow: theme.shadows[3] }} />
+                        <Area type="monotone" dataKey="revenue" stroke={theme.palette.primary.main} strokeWidth={3} fill="url(#gradRev)" />
                       </AreaChart>
                     </ResponsiveContainer>
                   </Box>
-                </CardContent>
-              </Card>
-            </Grid>
+                </Paper>
+              </Grid>
 
-            {/* Operational Status (Status Breakdown) */}
-            <Grid item xs={12} md={6}>
-              <Card sx={{ borderRadius: 2, height: '100%' }}>
-                <CardContent>
-                  <Typography variant="h6" sx={{ fontWeight: 700, mb: 3 }}>Operational Status</Typography>
-                  <Box height={350} sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
-                    <ResponsiveContainer width="100%" height="100%">
+              <Grid item xs={12} md={6}>
+                <Paper elevation={0} sx={{ p: 3, borderRadius: 4, border: '1px solid', borderColor: 'divider', height: '100%' }}>
+                  <Typography variant="h6" sx={{ fontWeight: 700, mb: 4 }}>Operational Status</Typography>
+                  <Box sx={{ width: '100%', height: 350 }}>
+                    <ResponsiveContainer>
                       <PieChart>
                         <Pie
                           data={statusBreakdown}
+                          innerRadius={90}
+                          outerRadius={120}
+                          paddingAngle={8}
                           dataKey="count"
                           nameKey="status"
-                          cx="50%"
-                          cy="50%"
-                          innerRadius={80}
-                          outerRadius={120}
-                          paddingAngle={5}
                         >
                           {statusBreakdown.map((entry, index) => (
-                            <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} cornerRadius={4} />
+                            <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} stroke="none" />
                           ))}
                         </Pie>
                         <Tooltip />
-                        <Legend verticalAlign="bottom" height={36}/>
+                        <Legend verticalAlign="bottom" align="center" iconType="circle" wrapperStyle={{ paddingTop: 20 }} />
                       </PieChart>
                     </ResponsiveContainer>
                   </Box>
-                </CardContent>
-              </Card>
+                </Paper>
+              </Grid>
             </Grid>
-          </Grid>
+          </Box>
+        </>
+      )}
+    </Box>
         </>
       )}
     </Box>
