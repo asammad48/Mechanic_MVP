@@ -237,243 +237,78 @@ const AnalyticsPage = () => {
         </Box>
       ) : (
         <>
-          {/* KPI Summary Cards */}
-          <Grid container spacing={3} mb={6}>
-            <Grid item xs={12} sm={6} md={3}>
-              <StatCard title="Total Revenue" value={`Rs. ${summary?.totalRevenue?.toLocaleString() || 0}`} subtext="Gross earnings in period" icon={TrendingUp} color="primary" />
+          {/* Simplified Grid - Only Two Main Cards */}
+          <Grid container spacing={4} mb={4}>
+            {/* Card 1: Total Visits */}
+            <Grid item xs={12} md={6}>
+              <StatCard 
+                title="Total Visits" 
+                value={summary?.totalVisits || 0} 
+                subtext="Total vehicle visits recorded" 
+                icon={CalendarToday} 
+                color="primary" 
+              />
             </Grid>
-            <Grid item xs={12} sm={6} md={3}>
-              <StatCard title="Visits Completed" value={summary?.deliveredCount || 0} subtext="Successfully delivered" icon={CheckCircle} color="success" />
-            </Grid>
-            <Grid item xs={12} sm={6} md={3}>
-              <StatCard title="Outstanding Balance" value={`Rs. ${summary?.unpaidAmount?.toLocaleString() || 0}`} subtext="Total unpaid amount" icon={AccountBalanceWallet} color="warning" />
-            </Grid>
-            <Grid item xs={12} sm={6} md={3}>
-              <StatCard title="Average Ticket" value={`Rs. ${Math.round(summary?.avgTicketSize || 0).toLocaleString()}`} subtext="Revenue per visit" icon={Receipt} color="info" />
+
+            {/* Card 2: Operational Status (Donut Chart) */}
+            <Grid item xs={12} md={6}>
+              <Paper 
+                elevation={0} 
+                sx={{ 
+                  p: 3.5, 
+                  borderRadius: '24px', 
+                  border: '1px solid #f1f5f9', 
+                  height: '100%',
+                  background: '#fff',
+                  boxShadow: '0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1)',
+                  transition: 'all 0.3s ease',
+                  '&:hover': {
+                    transform: 'translateY(-5px)',
+                    boxShadow: '0 20px 25px -5px rgb(0 0 0 / 0.1)'
+                  }
+                }}
+              >
+                <Typography variant="h6" sx={{ fontWeight: 700, mb: 4, color: 'text.primary', display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                  <Box sx={{ p: 1, borderRadius: '10px', bgcolor: 'info.lighter', color: 'info.main', display: 'flex' }}>
+                    <CheckCircle sx={{ fontSize: 18 }} />
+                  </Box>
+                  Operational Status
+                </Typography>
+                <Box sx={{ width: '100%', height: 350 }}>
+                  <ResponsiveContainer>
+                    <PieChart>
+                      <Pie
+                        data={statusBreakdown}
+                        innerRadius={80}
+                        outerRadius={110}
+                        paddingAngle={10}
+                        dataKey="count"
+                        nameKey="status"
+                      >
+                        {statusBreakdown.map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} stroke="none" />
+                        ))}
+                      </Pie>
+                      <Tooltip 
+                        contentStyle={{ 
+                          borderRadius: '12px', 
+                          border: 'none', 
+                          boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)'
+                        }}
+                      />
+                      <Legend 
+                        verticalAlign="bottom" 
+                        align="center" 
+                        iconType="circle" 
+                        wrapperStyle={{ paddingTop: 20 }}
+                        formatter={(value) => <span style={{ color: '#64748b', fontWeight: 600, fontSize: '12px' }}>{value}</span>}
+                      />
+                    </PieChart>
+                  </ResponsiveContainer>
+                </Box>
+              </Paper>
             </Grid>
           </Grid>
-
-          {/* Main Charts - Responsive Grid System */}
-          <Box sx={{ flexGrow: 1 }}>
-            <Grid container spacing={4}>
-              {/* Row 1: Visit Traffic & Top Mechanics */}
-              <Grid item xs={12} md={6}>
-                <Paper 
-                  elevation={0} 
-                  sx={{ 
-                    p: 3.5, 
-                    borderRadius: '24px', 
-                    border: '1px solid #f1f5f9', 
-                    height: '100%',
-                    background: '#fff',
-                    boxShadow: '0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1)'
-                  }}
-                >
-                  <Typography variant="h6" sx={{ fontWeight: 700, mb: 4, color: 'text.primary', display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                    <Box sx={{ p: 1, borderRadius: '10px', bgcolor: 'primary.lighter', color: 'primary.main', display: 'flex' }}>
-                      <CalendarToday sx={{ fontSize: 18 }} />
-                    </Box>
-                    Visit Traffic
-                  </Typography>
-                  <Box sx={{ width: '100%', height: 350 }}>
-                    <ResponsiveContainer>
-                      <BarChart data={revenueTrend} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                        <XAxis 
-                          dataKey="label" 
-                          axisLine={false} 
-                          tickLine={false} 
-                          tick={{ fontSize: 12, fill: '#64748b', fontWeight: 500 }}
-                          dy={10}
-                        />
-                        <YAxis 
-                          axisLine={false} 
-                          tickLine={false} 
-                          tick={{ fontSize: 12, fill: '#64748b', fontWeight: 500 }}
-                        />
-                        <Tooltip 
-                          cursor={{ fill: '#f8fafc', radius: 8 }}
-                          contentStyle={{ 
-                            borderRadius: '12px', 
-                            border: 'none', 
-                            boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)',
-                            padding: '12px'
-                          }}
-                        />
-                        <Bar 
-                          dataKey="visits" 
-                          fill={theme.palette.primary.main} 
-                          radius={[6, 6, 6, 6]} 
-                          barSize={32}
-                        />
-                      </BarChart>
-                    </ResponsiveContainer>
-                  </Box>
-                </Paper>
-              </Grid>
-
-              <Grid item xs={12} md={6}>
-                <Paper 
-                  elevation={0} 
-                  sx={{ 
-                    p: 3.5, 
-                    borderRadius: '24px', 
-                    border: '1px solid #f1f5f9', 
-                    height: '100%',
-                    background: '#fff',
-                    boxShadow: '0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1)'
-                  }}
-                >
-                  <Typography variant="h6" sx={{ fontWeight: 700, mb: 4, color: 'text.primary', display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                    <Box sx={{ p: 1, borderRadius: '10px', bgcolor: 'success.lighter', color: 'success.main', display: 'flex' }}>
-                      <TrendingUp sx={{ fontSize: 18 }} />
-                    </Box>
-                    Top Mechanics
-                  </Typography>
-                  <Box sx={{ width: '100%', height: 350 }}>
-                    <ResponsiveContainer>
-                      <BarChart data={topMechanics} layout="vertical" margin={{ top: 10, right: 30, left: 40, bottom: 10 }}>
-                        <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#f1f5f9" />
-                        <XAxis type="number" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#64748b' }} />
-                        <YAxis 
-                          dataKey="mechanicName" 
-                          type="category" 
-                          axisLine={false} 
-                          tickLine={false} 
-                          tick={{ fontSize: 12, fill: '#1e293b', fontWeight: 600 }} 
-                          width={100}
-                        />
-                        <Tooltip 
-                          cursor={{ fill: '#f8fafc', radius: 8 }}
-                          contentStyle={{ 
-                            borderRadius: '12px', 
-                            border: 'none', 
-                            boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)'
-                          }}
-                        />
-                        <Bar dataKey="revenue" fill={theme.palette.success.main} radius={[0, 6, 6, 0]} barSize={20} />
-                      </BarChart>
-                    </ResponsiveContainer>
-                  </Box>
-                </Paper>
-              </Grid>
-
-              {/* Row 2: Performance Outlook & Operational Status */}
-              <Grid item xs={12} md={6}>
-                <Paper 
-                  elevation={0} 
-                  sx={{ 
-                    p: 3.5, 
-                    borderRadius: '24px', 
-                    border: '1px solid #f1f5f9', 
-                    height: '100%',
-                    background: '#fff',
-                    boxShadow: '0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1)'
-                  }}
-                >
-                  <Stack direction="row" justifyContent="space-between" alignItems="center" mb={4}>
-                    <Typography variant="h6" sx={{ fontWeight: 700, color: 'text.primary', display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                      <Box sx={{ p: 1, borderRadius: '10px', bgcolor: 'warning.lighter', color: 'warning.main', display: 'flex' }}>
-                        <TrendingUp sx={{ fontSize: 18 }} />
-                      </Box>
-                      Performance Outlook
-                    </Typography>
-                    <Typography variant="caption" sx={{ px: 1.5, py: 0.75, bgcolor: 'primary.lighter', color: 'primary.main', borderRadius: '8px', fontWeight: 700, letterSpacing: '0.05em' }}>TREND</Typography>
-                  </Stack>
-                  <Box sx={{ width: '100%', height: 350 }}>
-                    <ResponsiveContainer>
-                      <AreaChart data={revenueTrend} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                        <defs>
-                          <linearGradient id="gradRev" x1="0" y1="0" x2="0" y2="1">
-                            <stop offset="5%" stopColor={theme.palette.primary.main} stopOpacity={0.15}/>
-                            <stop offset="95%" stopColor={theme.palette.primary.main} stopOpacity={0}/>
-                          </linearGradient>
-                        </defs>
-                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                        <XAxis 
-                          dataKey="label" 
-                          axisLine={false} 
-                          tickLine={false} 
-                          tick={{ fontSize: 12, fill: '#64748b' }}
-                          dy={10}
-                        />
-                        <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#64748b' }} />
-                        <Tooltip 
-                          contentStyle={{ 
-                            borderRadius: '12px', 
-                            border: 'none', 
-                            boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)'
-                          }}
-                        />
-                        <Area 
-                          type="monotone" 
-                          dataKey="revenue" 
-                          stroke={theme.palette.primary.main} 
-                          strokeWidth={4} 
-                          fill="url(#gradRev)" 
-                          dot={{ r: 4, fill: theme.palette.primary.main, strokeWidth: 2, stroke: '#fff' }}
-                          activeDot={{ r: 6, strokeWidth: 0 }}
-                        />
-                      </AreaChart>
-                    </ResponsiveContainer>
-                  </Box>
-                </Paper>
-              </Grid>
-
-              <Grid item xs={12} md={6}>
-                <Paper 
-                  elevation={0} 
-                  sx={{ 
-                    p: 3.5, 
-                    borderRadius: '24px', 
-                    border: '1px solid #f1f5f9', 
-                    height: '100%',
-                    background: '#fff',
-                    boxShadow: '0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1)'
-                  }}
-                >
-                  <Typography variant="h6" sx={{ fontWeight: 700, mb: 4, color: 'text.primary', display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                    <Box sx={{ p: 1, borderRadius: '10px', bgcolor: 'info.lighter', color: 'info.main', display: 'flex' }}>
-                      <CheckCircle sx={{ fontSize: 18 }} />
-                    </Box>
-                    Operational Status
-                  </Typography>
-                  <Box sx={{ width: '100%', height: 350 }}>
-                    <ResponsiveContainer>
-                      <PieChart>
-                        <Pie
-                          data={statusBreakdown}
-                          innerRadius={100}
-                          outerRadius={130}
-                          paddingAngle={10}
-                          dataKey="count"
-                          nameKey="status"
-                        >
-                          {statusBreakdown.map((entry, index) => (
-                            <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} stroke="none" />
-                          ))}
-                        </Pie>
-                        <Tooltip 
-                          contentStyle={{ 
-                            borderRadius: '12px', 
-                            border: 'none', 
-                            boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)'
-                          }}
-                        />
-                        <Legend 
-                          verticalAlign="bottom" 
-                          align="center" 
-                          iconType="circle" 
-                          wrapperStyle={{ paddingTop: 30 }}
-                          formatter={(value) => <span style={{ color: '#64748b', fontWeight: 600, fontSize: '12px' }}>{value}</span>}
-                        />
-                      </PieChart>
-                    </ResponsiveContainer>
-                  </Box>
-                </Paper>
-              </Grid>
-            </Grid>
-          </Box>
         </>
       )}
     </Box>
