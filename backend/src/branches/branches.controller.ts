@@ -3,16 +3,16 @@ import { z } from 'zod';
 import prisma from '../lib/prisma';
 
 const createBranchSchema = z.object({
-  name: z.string().min(1, 'Name is required'),
-  code: z.string().min(1, 'Code is required').toUpperCase(),
+  name: z.string().trim().min(1, 'Name is required'),
+  code: z.string().trim().min(1, 'Code is required').toUpperCase(),
   address: z.string().optional(),
   phone: z.string().optional(),
   isActive: z.boolean().optional().default(true),
 });
 
 const updateBranchSchema = z.object({
-  name: z.string().min(1).optional(),
-  code: z.string().min(1).toUpperCase().optional(),
+  name: z.string().trim().min(1).optional(),
+  code: z.string().trim().min(1).toUpperCase().optional(),
   address: z.string().optional(),
   phone: z.string().optional(),
   isActive: z.boolean().optional(),
@@ -87,7 +87,7 @@ export const createBranch = async (req: Request, res: Response) => {
     });
 
     if (existing) {
-      return res.status(400).json({ message: `Branch code ${validated.code} already exists.` });
+      return res.status(409).json({ message: `Branch code ${validated.code} already exists.` });
     }
 
     const branch = await prisma.branch.create({
