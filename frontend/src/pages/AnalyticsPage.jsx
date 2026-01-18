@@ -273,9 +273,9 @@ const AnalyticsPage = () => {
 
           {/* Enhanced Charts Section */}
           <Grid container spacing={3}>
-            {/* Visit Traffic and Top Mechanics in the Second Row */}
+            {/* Visit Traffic */}
             <Grid item xs={12} md={6}>
-              <Card sx={{ borderRadius: 2 }}>
+              <Card sx={{ borderRadius: 2, height: '100%' }}>
                 <CardContent>
                   <Typography variant="h6" sx={{ fontWeight: 700, mb: 3 }}>Visit Traffic</Typography>
                   <Box height={350}>
@@ -298,8 +298,9 @@ const AnalyticsPage = () => {
               </Card>
             </Grid>
 
+            {/* Top Performing Mechanics */}
             <Grid item xs={12} md={6}>
-              <Card sx={{ borderRadius: 2 }}>
+              <Card sx={{ borderRadius: 2, height: '100%' }}>
                 <CardContent>
                   <Typography variant="h6" sx={{ fontWeight: 700, mb: 3 }}>Top Performing Mechanics</Typography>
                   <Box height={350}>
@@ -329,15 +330,15 @@ const AnalyticsPage = () => {
               </Card>
             </Grid>
 
-            {/* Revenue Trend Chart */}
-            <Grid item xs={12} lg={8}>
-              <Card sx={{ height: '100%', borderRadius: 2 }}>
+            {/* Performance Outlook (Revenue Trend) */}
+            <Grid item xs={12} md={6}>
+              <Card sx={{ borderRadius: 2, height: '100%' }}>
                 <CardContent>
                   <Stack direction="row" justifyContent="space-between" alignItems="center" mb={3}>
                     <Typography variant="h6" sx={{ fontWeight: 700 }}>Performance Outlook</Typography>
                     <Typography variant="caption" color="text.secondary">Revenue vs Unpaid (Trend)</Typography>
                   </Stack>
-                  <Box height={400}>
+                  <Box height={350}>
                     <ResponsiveContainer width="100%" height="100%">
                       <AreaChart data={revenueTrend} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
                         <defs>
@@ -396,12 +397,12 @@ const AnalyticsPage = () => {
               </Card>
             </Grid>
 
-            {/* Status Breakdown Pie */}
-            <Grid item xs={12} lg={4}>
-              <Card sx={{ height: '100%', borderRadius: 2 }}>
+            {/* Operational Status (Status Breakdown) */}
+            <Grid item xs={12} md={6}>
+              <Card sx={{ borderRadius: 2, height: '100%' }}>
                 <CardContent>
                   <Typography variant="h6" sx={{ fontWeight: 700, mb: 3 }}>Operational Status</Typography>
-                  <Box height={400} sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+                  <Box height={350} sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
                     <ResponsiveContainer width="100%" height="100%">
                       <PieChart>
                         <Pie
