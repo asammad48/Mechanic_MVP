@@ -32,6 +32,8 @@ const BranchesPage = () => {
   
   // Modal state
   const [openModal, setOpenModal] = useState(false);
+  const [editMode, setEditMode] = useState(false);
+  const [selectedBranchId, setSelectedBranchId] = useState(null);
   const [submitting, setSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
@@ -66,8 +68,21 @@ const BranchesPage = () => {
     fetchBranches();
   }, []);
 
-  const handleOpenModal = () => {
-    setFormData({ name: '', code: '', phone: '', address: '' });
+  const handleOpenModal = (branch = null) => {
+    if (branch) {
+      setEditMode(true);
+      setSelectedBranchId(branch.id);
+      setFormData({
+        name: branch.name,
+        code: branch.code,
+        phone: branch.phone || '',
+        address: branch.address || ''
+      });
+    } else {
+      setEditMode(false);
+      setSelectedBranchId(null);
+      setFormData({ name: '', code: '', phone: '', address: '' });
+    }
     setFormErrors({});
     setOpenModal(true);
   };
@@ -101,17 +116,22 @@ const BranchesPage = () => {
 
     try {
       setSubmitting(true);
-      await api.post('/branches', formData);
+      if (editMode) {
+        await api.patch(`/branches/${selectedBranchId}`, formData);
+      } else {
+        await api.post('/branches', formData);
+      }
+      
       setSnackbar({
         open: true,
-        message: 'Branch created successfully',
+        message: editMode ? 'Branch updated successfully' : 'Branch created successfully',
         severity: 'success'
       });
       setOpenModal(false);
       fetchBranches();
     } catch (err) {
-      console.error('Error creating branch:', err);
-      const backendError = err.response?.data?.message || 'Failed to create branch';
+      console.error('Error saving branch:', err);
+      const backendError = err.response?.data?.message || `Failed to ${editMode ? 'update' : 'create'} branch`;
       setSnackbar({
         open: true,
         message: backendError,
@@ -234,6 +254,7 @@ const BranchesPage = () => {
                         size="small"
                         startIcon={<EditIcon />}
                         sx={{ textTransform: 'none' }}
+                        onClick={() => handleOpenModal(branch)}
                       >
                         Edit
                       </Button>
@@ -246,14 +267,16 @@ const BranchesPage = () => {
         )}
       </Box>
 
-      {/* Create Branch Modal */}
+      {/* Create/Edit Branch Modal */}
       <Dialog 
         open={openModal} 
         onClose={handleCloseModal}
         fullWidth
         maxWidth="sm"
       >
-        <DialogTitle sx={{ fontWeight: 700 }}>Create New Branch</DialogTitle>
+        <DialogTitle sx={{ fontWeight: 700 }}>
+          {editMode ? 'Edit Branch' : 'Create New Branch'}
+        </DialogTitle>
         <DialogContent dividers>
           <Box component="form" sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: 1 }}>
             <TextField
@@ -275,6 +298,7 @@ const BranchesPage = () => {
               helperText={formErrors.code || "Unique short code (e.g., MAIN, NORTH)"}
               required
               fullWidth
+              disabled={editMode && formData.code === 'MAIN'} // Optional: protect main branch code
               inputProps={{ style: { textTransform: 'uppercase' } }}
             />
             <TextField
@@ -305,7 +329,7 @@ const BranchesPage = () => {
             disabled={submitting}
             sx={{ px: 4 }}
           >
-            {submitting ? <CircularProgress size={24} color="inherit" /> : 'Create'}
+            {submitting ? <CircularProgress size={24} color="inherit" /> : (editMode ? 'Update' : 'Create')}
           </Button>
         </DialogActions>
       </Dialog>
