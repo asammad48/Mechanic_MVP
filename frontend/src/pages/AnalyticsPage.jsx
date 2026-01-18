@@ -19,51 +19,59 @@ import {
 import api from '../services/api';
 import { useAuth } from '../contexts/AuthContext';
 
-const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8', '#82ca9d'];
+const COLORS = ['#2563eb', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#06b6d4'];
 
 const StatCard = ({ title, value, subtext, icon: Icon, color }) => (
-  <Card sx={{ height: '100%', position: 'relative', overflow: 'hidden' }}>
-    <CardContent>
-      <Stack direction="row" spacing={2} alignItems="center" mb={2}>
+  <Card 
+    elevation={0} 
+    sx={{ 
+      height: '100%', 
+      borderRadius: '20px', 
+      background: '#fff',
+      border: '1px solid #f1f5f9',
+      transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+      '&:hover': {
+        transform: 'translateY(-5px)',
+        boxShadow: '0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1)',
+        borderColor: `${color}.light`
+      }
+    }}
+  >
+    <CardContent sx={{ p: 3 }}>
+      <Stack direction="row" spacing={2} alignItems="center" mb={2.5}>
         <Box sx={{ 
-          p: 1.5, 
-          borderRadius: 2, 
+          p: 1.25, 
+          borderRadius: '12px', 
           bgcolor: `${color}.lighter`, 
           color: `${color}.main`,
           display: 'flex',
           alignItems: 'center',
-          justifyContent: 'center'
+          justifyContent: 'center',
+          boxShadow: `inset 0 0 0 1px ${theme => theme.palette[color].light}20`
         }}>
-          <Icon />
+          <Icon sx={{ fontSize: 22 }} />
         </Box>
-        <Typography variant="subtitle2" color="text.secondary" sx={{ fontWeight: 600 }}>
+        <Typography variant="subtitle2" sx={{ fontWeight: 600, color: 'text.secondary', letterSpacing: '0.025em' }}>
           {title}
         </Typography>
       </Stack>
-      <Typography variant="h4" sx={{ fontWeight: 800, mb: 1 }}>
+      <Typography variant="h4" sx={{ fontWeight: 800, mb: 1, color: 'text.primary', letterSpacing: '-0.025em' }}>
         {value}
       </Typography>
       {subtext && (
-        <Typography variant="caption" color="text.secondary" sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+        <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 500, display: 'flex', alignItems: 'center', gap: 0.5 }}>
+          <Box component="span" sx={{ width: 6, height: 6, borderRadius: '50%', bgcolor: `${color}.main` }} />
           {subtext}
         </Typography>
       )}
     </CardContent>
-    <Box sx={{ 
-      position: 'absolute', 
-      bottom: -15, 
-      right: -15, 
-      opacity: 0.05, 
-      transform: 'rotate(-15deg)' 
-    }}>
-      <Icon sx={{ fontSize: 100 }} />
-    </Box>
   </Card>
 );
 
 const AnalyticsPage = () => {
   const theme = useTheme();
   const { user } = useAuth();
+  // ... rest of state stays same
   const [range, setRange] = useState('30d');
   const [dateFrom, setDateFrom] = useState('');
   const [dateTo, setDateTo] = useState('');
@@ -250,18 +258,54 @@ const AnalyticsPage = () => {
             <Grid container spacing={4}>
               {/* Row 1: Visit Traffic & Top Mechanics */}
               <Grid item xs={12} md={6}>
-                <Paper elevation={0} sx={{ p: 3, borderRadius: 4, border: '1px solid', borderColor: 'divider', height: '100%' }}>
-                  <Typography variant="h6" sx={{ fontWeight: 700, mb: 4, display: 'flex', alignItems: 'center', gap: 1 }}>
-                    <CalendarToday fontSize="small" color="primary" /> Visit Traffic
+                <Paper 
+                  elevation={0} 
+                  sx={{ 
+                    p: 3.5, 
+                    borderRadius: '24px', 
+                    border: '1px solid #f1f5f9', 
+                    height: '100%',
+                    background: '#fff',
+                    boxShadow: '0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1)'
+                  }}
+                >
+                  <Typography variant="h6" sx={{ fontWeight: 700, mb: 4, color: 'text.primary', display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                    <Box sx={{ p: 1, borderRadius: '10px', bgcolor: 'primary.lighter', color: 'primary.main', display: 'flex' }}>
+                      <CalendarToday sx={{ fontSize: 18 }} />
+                    </Box>
+                    Visit Traffic
                   </Typography>
                   <Box sx={{ width: '100%', height: 350 }}>
                     <ResponsiveContainer>
-                      <BarChart data={revenueTrend}>
-                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={theme.palette.divider} />
-                        <XAxis dataKey="label" axisLine={false} tickLine={false} tick={{ fontSize: 11 }} />
-                        <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 11 }} />
-                        <Tooltip contentStyle={{ borderRadius: 12, border: 'none', boxShadow: theme.shadows[3] }} />
-                        <Bar dataKey="visits" fill={theme.palette.primary.main} radius={[6, 6, 0, 0]} barSize={40} />
+                      <BarChart data={revenueTrend} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                        <XAxis 
+                          dataKey="label" 
+                          axisLine={false} 
+                          tickLine={false} 
+                          tick={{ fontSize: 12, fill: '#64748b', fontWeight: 500 }}
+                          dy={10}
+                        />
+                        <YAxis 
+                          axisLine={false} 
+                          tickLine={false} 
+                          tick={{ fontSize: 12, fill: '#64748b', fontWeight: 500 }}
+                        />
+                        <Tooltip 
+                          cursor={{ fill: '#f8fafc', radius: 8 }}
+                          contentStyle={{ 
+                            borderRadius: '12px', 
+                            border: 'none', 
+                            boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)',
+                            padding: '12px'
+                          }}
+                        />
+                        <Bar 
+                          dataKey="visits" 
+                          fill={theme.palette.primary.main} 
+                          radius={[6, 6, 6, 6]} 
+                          barSize={32}
+                        />
                       </BarChart>
                     </ResponsiveContainer>
                   </Box>
@@ -269,16 +313,45 @@ const AnalyticsPage = () => {
               </Grid>
 
               <Grid item xs={12} md={6}>
-                <Paper elevation={0} sx={{ p: 3, borderRadius: 4, border: '1px solid', borderColor: 'divider', height: '100%' }}>
-                  <Typography variant="h6" sx={{ fontWeight: 700, mb: 4 }}>Top Mechanics</Typography>
+                <Paper 
+                  elevation={0} 
+                  sx={{ 
+                    p: 3.5, 
+                    borderRadius: '24px', 
+                    border: '1px solid #f1f5f9', 
+                    height: '100%',
+                    background: '#fff',
+                    boxShadow: '0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1)'
+                  }}
+                >
+                  <Typography variant="h6" sx={{ fontWeight: 700, mb: 4, color: 'text.primary', display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                    <Box sx={{ p: 1, borderRadius: '10px', bgcolor: 'success.lighter', color: 'success.main', display: 'flex' }}>
+                      <TrendingUp sx={{ fontSize: 18 }} />
+                    </Box>
+                    Top Mechanics
+                  </Typography>
                   <Box sx={{ width: '100%', height: 350 }}>
                     <ResponsiveContainer>
-                      <BarChart data={topMechanics} layout="vertical" margin={{ left: 20 }}>
-                        <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke={theme.palette.divider} />
-                        <XAxis type="number" axisLine={false} tickLine={false} tick={{ fontSize: 11 }} />
-                        <YAxis dataKey="mechanicName" type="category" axisLine={false} tickLine={false} tick={{ fontSize: 11 }} width={100} />
-                        <Tooltip contentStyle={{ borderRadius: 12, border: 'none', boxShadow: theme.shadows[3] }} />
-                        <Bar dataKey="revenue" fill={theme.palette.success.main} radius={[0, 6, 6, 0]} barSize={25} />
+                      <BarChart data={topMechanics} layout="vertical" margin={{ top: 10, right: 30, left: 40, bottom: 10 }}>
+                        <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#f1f5f9" />
+                        <XAxis type="number" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#64748b' }} />
+                        <YAxis 
+                          dataKey="mechanicName" 
+                          type="category" 
+                          axisLine={false} 
+                          tickLine={false} 
+                          tick={{ fontSize: 12, fill: '#1e293b', fontWeight: 600 }} 
+                          width={100}
+                        />
+                        <Tooltip 
+                          cursor={{ fill: '#f8fafc', radius: 8 }}
+                          contentStyle={{ 
+                            borderRadius: '12px', 
+                            border: 'none', 
+                            boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)'
+                          }}
+                        />
+                        <Bar dataKey="revenue" fill={theme.palette.success.main} radius={[0, 6, 6, 0]} barSize={20} />
                       </BarChart>
                     </ResponsiveContainer>
                   </Box>
@@ -287,25 +360,60 @@ const AnalyticsPage = () => {
 
               {/* Row 2: Performance Outlook & Operational Status */}
               <Grid item xs={12} md={6}>
-                <Paper elevation={0} sx={{ p: 3, borderRadius: 4, border: '1px solid', borderColor: 'divider', height: '100%' }}>
+                <Paper 
+                  elevation={0} 
+                  sx={{ 
+                    p: 3.5, 
+                    borderRadius: '24px', 
+                    border: '1px solid #f1f5f9', 
+                    height: '100%',
+                    background: '#fff',
+                    boxShadow: '0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1)'
+                  }}
+                >
                   <Stack direction="row" justifyContent="space-between" alignItems="center" mb={4}>
-                    <Typography variant="h6" sx={{ fontWeight: 700 }}>Performance Outlook</Typography>
-                    <Typography variant="caption" sx={{ px: 1.5, py: 0.5, bgcolor: 'primary.lighter', color: 'primary.main', borderRadius: 1, fontWeight: 700 }}>REVENUE TREND</Typography>
+                    <Typography variant="h6" sx={{ fontWeight: 700, color: 'text.primary', display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                      <Box sx={{ p: 1, borderRadius: '10px', bgcolor: 'warning.lighter', color: 'warning.main', display: 'flex' }}>
+                        <TrendingUp sx={{ fontSize: 18 }} />
+                      </Box>
+                      Performance Outlook
+                    </Typography>
+                    <Typography variant="caption" sx={{ px: 1.5, py: 0.75, bgcolor: 'primary.lighter', color: 'primary.main', borderRadius: '8px', fontWeight: 700, letterSpacing: '0.05em' }}>TREND</Typography>
                   </Stack>
                   <Box sx={{ width: '100%', height: 350 }}>
                     <ResponsiveContainer>
-                      <AreaChart data={revenueTrend}>
+                      <AreaChart data={revenueTrend} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                         <defs>
                           <linearGradient id="gradRev" x1="0" y1="0" x2="0" y2="1">
-                            <stop offset="5%" stopColor={theme.palette.primary.main} stopOpacity={0.2}/>
+                            <stop offset="5%" stopColor={theme.palette.primary.main} stopOpacity={0.15}/>
                             <stop offset="95%" stopColor={theme.palette.primary.main} stopOpacity={0}/>
                           </linearGradient>
                         </defs>
-                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={theme.palette.divider} />
-                        <XAxis dataKey="label" axisLine={false} tickLine={false} tick={{ fontSize: 11 }} />
-                        <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 11 }} />
-                        <Tooltip contentStyle={{ borderRadius: 12, border: 'none', boxShadow: theme.shadows[3] }} />
-                        <Area type="monotone" dataKey="revenue" stroke={theme.palette.primary.main} strokeWidth={3} fill="url(#gradRev)" />
+                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                        <XAxis 
+                          dataKey="label" 
+                          axisLine={false} 
+                          tickLine={false} 
+                          tick={{ fontSize: 12, fill: '#64748b' }}
+                          dy={10}
+                        />
+                        <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#64748b' }} />
+                        <Tooltip 
+                          contentStyle={{ 
+                            borderRadius: '12px', 
+                            border: 'none', 
+                            boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)'
+                          }}
+                        />
+                        <Area 
+                          type="monotone" 
+                          dataKey="revenue" 
+                          stroke={theme.palette.primary.main} 
+                          strokeWidth={4} 
+                          fill="url(#gradRev)" 
+                          dot={{ r: 4, fill: theme.palette.primary.main, strokeWidth: 2, stroke: '#fff' }}
+                          activeDot={{ r: 6, strokeWidth: 0 }}
+                        />
                       </AreaChart>
                     </ResponsiveContainer>
                   </Box>
@@ -313,16 +421,31 @@ const AnalyticsPage = () => {
               </Grid>
 
               <Grid item xs={12} md={6}>
-                <Paper elevation={0} sx={{ p: 3, borderRadius: 4, border: '1px solid', borderColor: 'divider', height: '100%' }}>
-                  <Typography variant="h6" sx={{ fontWeight: 700, mb: 4 }}>Operational Status</Typography>
+                <Paper 
+                  elevation={0} 
+                  sx={{ 
+                    p: 3.5, 
+                    borderRadius: '24px', 
+                    border: '1px solid #f1f5f9', 
+                    height: '100%',
+                    background: '#fff',
+                    boxShadow: '0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1)'
+                  }}
+                >
+                  <Typography variant="h6" sx={{ fontWeight: 700, mb: 4, color: 'text.primary', display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                    <Box sx={{ p: 1, borderRadius: '10px', bgcolor: 'info.lighter', color: 'info.main', display: 'flex' }}>
+                      <CheckCircle sx={{ fontSize: 18 }} />
+                    </Box>
+                    Operational Status
+                  </Typography>
                   <Box sx={{ width: '100%', height: 350 }}>
                     <ResponsiveContainer>
                       <PieChart>
                         <Pie
                           data={statusBreakdown}
-                          innerRadius={90}
-                          outerRadius={120}
-                          paddingAngle={8}
+                          innerRadius={100}
+                          outerRadius={130}
+                          paddingAngle={10}
                           dataKey="count"
                           nameKey="status"
                         >
@@ -330,8 +453,20 @@ const AnalyticsPage = () => {
                             <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} stroke="none" />
                           ))}
                         </Pie>
-                        <Tooltip />
-                        <Legend verticalAlign="bottom" align="center" iconType="circle" wrapperStyle={{ paddingTop: 20 }} />
+                        <Tooltip 
+                          contentStyle={{ 
+                            borderRadius: '12px', 
+                            border: 'none', 
+                            boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)'
+                          }}
+                        />
+                        <Legend 
+                          verticalAlign="bottom" 
+                          align="center" 
+                          iconType="circle" 
+                          wrapperStyle={{ paddingTop: 30 }}
+                          formatter={(value) => <span style={{ color: '#64748b', fontWeight: 600, fontSize: '12px' }}>{value}</span>}
+                        />
                       </PieChart>
                     </ResponsiveContainer>
                   </Box>
