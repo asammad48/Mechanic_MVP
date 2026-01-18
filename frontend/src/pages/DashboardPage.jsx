@@ -23,7 +23,8 @@ import {
   Person as PersonIcon,
   Download as DownloadIcon,
   BarChart as AnalyticsIcon,
-  Search as SearchIcon
+  Search as SearchIcon,
+  Settings as SettingsIcon
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
@@ -119,6 +120,14 @@ const DashboardPage = () => {
               size={isMobile ? "medium" : "large"}
             >
               Analytics
+            </Button>
+            <Button 
+              variant="outlined"
+              onClick={() => navigate('/settings')}
+              startIcon={<SettingsIcon />}
+              size={isMobile ? "medium" : "large"}
+            >
+              Settings
             </Button>
             <Button 
               variant="outlined"
