@@ -7,19 +7,6 @@ import {
   Button, 
   CircularProgress, 
   Alert,
-  Stack
-} from '@mui/material';
-import { Add as AddIcon } from '@mui/icons-material';
-import api from '../services/api';
-
-import { 
-  Box, 
-  Typography, 
-  Container, 
-  Paper, 
-  Button, 
-  CircularProgress, 
-  Alert,
   Stack,
   Table,
   TableBody,
