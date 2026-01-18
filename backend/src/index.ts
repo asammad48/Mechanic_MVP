@@ -8,6 +8,7 @@ import vehicleRoutes from './vehicles/vehicles.routes';
 import visitRoutes from './visits/visits.routes';
 import analyticsRoutes from './analytics/analytics.routes';
 import branchRoutes from './branches/branches.routes';
+import roleRoutes from './roles/roles.routes';
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -27,6 +28,7 @@ app.use('/vehicles', vehicleRoutes);
 app.use('/visits', visitRoutes);
 app.use('/analytics', analyticsRoutes);
 app.use('/branches', branchRoutes);
+app.use('/roles', roleRoutes);
 import laborItemRoutes from './labor-items/labor-items.routes';
 import partItemRoutes from './part-items/part-items.routes';
 import outsideWorkItemRoutes from './outside-work-items/outside-work-items.routes';
