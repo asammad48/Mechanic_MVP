@@ -27,6 +27,9 @@ model Role {
   id    String @id @default(cuid())
   name  String @unique
   users User[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model User {
@@ -43,6 +46,7 @@ model User {
   branchId String?
 
   createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   createdVisits    Visit[]      @relation("CreatedBy")
   assignedVisits   Visit[]      @relation("AssignedTo")
@@ -63,6 +67,7 @@ model Customer {
   branchId String
 
   createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   vehicles Vehicle[]
   visits   Visit[]
@@ -86,6 +91,9 @@ model Vehicle {
 
   branch   Branch @relation(fields: [branchId], references: [id])
   branchId String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   visits Visit[]
 
@@ -156,6 +164,9 @@ model LaborItem {
   deletedAt       DateTime?
   deletedBy       User?     @relation("DeletedByLabor", fields: [deletedByUserId], references: [id])
   deletedByUserId String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model PartItem {
@@ -171,6 +182,9 @@ model PartItem {
   deletedAt       DateTime?
   deletedBy       User?     @relation("DeletedByPart", fields: [deletedByUserId], references: [id])
   deletedByUserId String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model OutsideWorkItem {
@@ -180,6 +194,7 @@ model OutsideWorkItem {
   cost            Decimal
   notes           String?
   createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
 
   visit    Visit  @relation(fields: [visitId], references: [id])
   visitId  String
@@ -190,6 +205,7 @@ model Payment {
   paidAmount  Decimal
   method      String?  // CASH, CARD, TRANSFER
   paidAt      DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
   visit    Visit @relation(fields: [visitId], references: [id])
   visitId  String
@@ -212,6 +228,7 @@ model VisitNote {
   createdByUserId String
 
   createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model VisitEvent {
@@ -229,4 +246,5 @@ model VisitEvent {
   createdByUserId String
 
   createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
