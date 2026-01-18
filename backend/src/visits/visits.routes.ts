@@ -14,6 +14,7 @@ import {
   exportVisits
 } from './visits.controller';
 import { authenticate, authorize } from '../auth/auth.middleware';
+import { checkBranchActive } from '../middleware/branch-active.middleware';
 
 const router = Router();
 
@@ -23,7 +24,7 @@ router.use(authenticate);
 router.get('/', authorize(['Receptionist', 'Manager', 'Owner/Admin', 'Mechanic']), getVisits);
 router.get('/export', authorize(['Manager', 'Owner/Admin']), exportVisits);
 router.get('/:id', authorize(['Receptionist', 'Manager', 'Owner/Admin', 'Mechanic']), getVisitById);
-router.post('/', authorize(['Receptionist', 'Manager', 'Owner/Admin']), createVisit);
+router.post('/', authorize(['Receptionist', 'Manager', 'Owner/Admin']), checkBranchActive, createVisit);
 router.patch('/:id', authorize(['Manager', 'Owner/Admin', 'Mechanic']), updateVisit);
 router.post('/:id/labor-items', authorize(['Mechanic', 'Manager', 'Owner/Admin']), addLaborItem);
 router.post('/:id/part-items', authorize(['Manager', 'Owner/Admin']), addPartItem);
