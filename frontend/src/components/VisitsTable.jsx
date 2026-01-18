@@ -15,17 +15,35 @@ import {
 } from '@mui/material';
 import { 
   AddCircleOutline as AddVisitIcon,
-  Visibility as ViewIcon
+  Visibility as ViewIcon,
+  CheckCircleOutline as PaidIcon
 } from '@mui/icons-material';
+import api from '../services/api';
 
 const statusColors = {
   'PENDING': 'warning',
   'IN_PROGRESS': 'info',
   'COMPLETED': 'success',
+  'DELIVERED': 'success',
   'CANCELLED': 'error'
 };
 
-const VisitsTable = ({ visits, onRowClick, onNewVisitClick }) => {
+const VisitsTable = ({ visits, onRowClick, onNewVisitClick, onVisitUpdate }) => {
+  const handleMarkAsPaid = async (e, visit) => {
+    e.stopPropagation();
+    try {
+      const { data } = await api.patch(`/visits/${visit.id}`, { 
+        paymentStatus: 'PAID',
+        paidAmount: visit.grandTotal,
+        dueAmount: 0
+      });
+      if (onVisitUpdate) onVisitUpdate(data);
+    } catch (error) {
+      console.error('Failed to mark as paid:', error);
+      alert('Failed to update payment status');
+    }
+  };
+
   if (visits.length === 0) {
     return (
       <Box sx={{ p: 4, textAlign: 'center' }}>
@@ -74,7 +92,7 @@ const VisitsTable = ({ visits, onRowClick, onNewVisitClick }) => {
               </TableCell>
               <TableCell onClick={() => onRowClick(visit.id)}>
                 <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                  ${(visit.grandTotal ? Number(visit.grandTotal) : 0).toLocaleString()}
+                  Rs. {(visit.grandTotal ? Number(visit.grandTotal) : 0).toLocaleString()}
                 </Typography>
               </TableCell>
               <TableCell onClick={() => onRowClick(visit.id)}>
@@ -88,6 +106,13 @@ const VisitsTable = ({ visits, onRowClick, onNewVisitClick }) => {
               </TableCell>
               <TableCell align="right">
                 <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1 }}>
+                  {visit.paymentStatus !== 'PAID' && (
+                    <Tooltip title="Mark as Paid">
+                      <IconButton size="small" color="success" onClick={(e) => handleMarkAsPaid(e, visit)}>
+                        <PaidIcon fontSize="small" />
+                      </IconButton>
+                    </Tooltip>
+                  )}
                   <Tooltip title="New Visit for Customer">
                     <IconButton size="small" color="primary" onClick={(e) => {
                       e.stopPropagation();
