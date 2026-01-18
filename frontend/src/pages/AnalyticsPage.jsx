@@ -330,8 +330,8 @@ const AnalyticsPage = () => {
                   <ResponsiveContainer>
                     <BarChart 
                       data={[
-                        { name: 'Paid', amount: summary?.paidAmount || 0, color: '#10b981' },
-                        { name: 'Unpaid', amount: summary?.unpaidAmount || 0, color: '#f59e0b' }
+                        { name: 'Paid', amount: summary?.paid_amount || 0, color: '#10b981' },
+                        { name: 'Unpaid', amount: summary?.unpaid_amount || 0, color: '#f59e0b' }
                       ]}
                       margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
                     >
@@ -360,11 +360,11 @@ const AnalyticsPage = () => {
                 <Stack direction="row" spacing={3} justifyContent="center" mt={1}>
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                     <Box sx={{ width: 10, height: 10, borderRadius: '50%', bgcolor: '#10b981' }} />
-                    <Typography variant="caption" sx={{ fontWeight: 600, color: 'text.secondary' }}>Paid: Rs. {summary?.paidAmount?.toLocaleString() || 0}</Typography>
+                    <Typography variant="caption" sx={{ fontWeight: 600, color: 'text.secondary' }}>Paid: Rs. {summary?.paid_amount?.toLocaleString() || 0}</Typography>
                   </Box>
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                     <Box sx={{ width: 10, height: 10, borderRadius: '50%', bgcolor: '#f59e0b' }} />
-                    <Typography variant="caption" sx={{ fontWeight: 600, color: 'text.secondary' }}>Unpaid: Rs. {summary?.unpaidAmount?.toLocaleString() || 0}</Typography>
+                    <Typography variant="caption" sx={{ fontWeight: 600, color: 'text.secondary' }}>Unpaid: Rs. {summary?.unpaid_amount?.toLocaleString() || 0}</Typography>
                   </Box>
                 </Stack>
               </Paper>
