@@ -13,4 +13,10 @@ router.get('/', branchesController.getAllBranches);
 // GET /branches/me - For non-super users
 router.get('/me', branchesController.getMyBranch);
 
+// POST /branches - Super Admin only
+router.post('/', branchesController.createBranch);
+
+// PATCH /branches/:id - Super Admin only
+router.patch('/:id', branchesController.updateBranch);
+
 export default router;
