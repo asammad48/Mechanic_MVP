@@ -7,6 +7,7 @@ import customerRoutes from './customers/customers.routes';
 import vehicleRoutes from './vehicles/vehicles.routes';
 import visitRoutes from './visits/visits.routes';
 import analyticsRoutes from './analytics/analytics.routes';
+import branchRoutes from './branches/branches.routes';
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -25,6 +26,7 @@ app.use('/customers', customerRoutes);
 app.use('/vehicles', vehicleRoutes);
 app.use('/visits', visitRoutes);
 app.use('/analytics', analyticsRoutes);
+app.use('/branches', branchRoutes);
 import laborItemRoutes from './labor-items/labor-items.routes';
 import partItemRoutes from './part-items/part-items.routes';
 import outsideWorkItemRoutes from './outside-work-items/outside-work-items.routes';
