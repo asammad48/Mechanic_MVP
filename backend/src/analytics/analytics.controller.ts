@@ -47,12 +47,12 @@ export const getSummary = async (req: Request, res: Response) => {
     const where: Prisma.VisitWhereInput = {
       ...branchFilter,
       createdAt: dateFilter,
-    } as any;
+    };
 
     const [totalVisits, deliveredVisits, statusCounts] = await Promise.all([
       prisma.visit.count({ where }),
       prisma.visit.findMany({
-        where: { ...where, status: 'DELIVERED' } as any,
+        where: { ...where, status: 'DELIVERED' },
         select: { grandTotal: true, dueAmount: true, paidAmount: true }
       }),
       prisma.visit.groupBy({
@@ -95,7 +95,7 @@ export const getRevenueTrend = async (req: Request, res: Response) => {
         ...branchFilter,
         createdAt: dateFilter,
         status: 'DELIVERED'
-      } as any,
+      },
       select: {
         createdAt: true,
         grandTotal: true,
@@ -138,7 +138,7 @@ export const getStatusBreakdown = async (req: Request, res: Response) => {
       where: {
         ...branchFilter,
         createdAt: dateFilter,
-      } as any,
+      },
       _count: { _all: true }
     });
 
@@ -161,7 +161,7 @@ export const getTopMechanics = async (req: Request, res: Response) => {
         createdAt: dateFilter,
         status: 'DELIVERED',
         assignedMechanicId: { not: null }
-      } as any,
+      },
       include: {
         assignedMechanic: {
           select: { name: true }
