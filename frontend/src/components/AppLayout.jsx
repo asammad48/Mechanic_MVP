@@ -53,7 +53,7 @@ const AppLayout = () => {
     { text: 'Analytics', icon: <AnalyticsIcon />, path: '/analytics', roles: ['Manager', 'Owner/Admin'] },
     { text: 'Users', icon: <PeopleIcon />, path: '/users', roles: ['Manager', 'Owner/Admin'] },
     { text: 'Roles', icon: <SecurityIcon />, path: '/roles', isSuperAdminOnly: true },
-    { text: 'Branches', icon: <BusinessIcon />, path: '/branches', isSuperAdminOnly: true },
+    { text: 'Branches', icon: <BusinessIcon />, path: '/branches', roles: ['Owner/Admin'] },
     { text: 'Settings', icon: <SettingsIcon />, path: '/settings', roles: ['Receptionist', 'Manager', 'Owner/Admin', 'Mechanic'] },
   ];
 
