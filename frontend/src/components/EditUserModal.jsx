@@ -122,7 +122,7 @@ const EditUserModal = ({ open, handleClose, onUserUpdated, currentUser, userToEd
               </Select>
             </FormControl>
 
-            {currentUser?.isSuperAdmin && (
+            {(currentUser?.isSuperAdmin || currentUser?.role === 'Owner/Admin') && (
               <FormControl fullWidth error={!!validationErrors.branchId} required>
                 <InputLabel>Branch</InputLabel>
                 <Select
