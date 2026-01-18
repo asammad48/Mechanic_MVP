@@ -12,6 +12,26 @@ import {
 import { Add as AddIcon } from '@mui/icons-material';
 import api from '../services/api';
 
+import { 
+  Box, 
+  Typography, 
+  Container, 
+  Paper, 
+  Button, 
+  CircularProgress, 
+  Alert,
+  Stack,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Chip
+} from '@mui/material';
+import { Add as AddIcon, Edit as EditIcon } from '@mui/icons-material';
+import api from '../services/api';
+
 const BranchesPage = () => {
   const [branches, setBranches] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -95,9 +115,56 @@ const BranchesPage = () => {
             </Button>
           </Paper>
         ) : (
-          <Typography variant="body1">
-            {branches.length} branches found. (Table view coming soon)
-          </Typography>
+          <TableContainer component={Paper} sx={{ borderRadius: 2, overflow: 'hidden' }}>
+            <Table>
+              <TableHead sx={{ bgcolor: 'grey.50' }}>
+                <TableRow>
+                  <TableCell sx={{ fontWeight: 700 }}>Name</TableCell>
+                  <TableCell sx={{ fontWeight: 700 }}>Code</TableCell>
+                  <TableCell sx={{ fontWeight: 700 }}>Phone</TableCell>
+                  <TableCell sx={{ fontWeight: 700 }}>Status</TableCell>
+                  <TableCell align="right" sx={{ fontWeight: 700 }}>Actions</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {branches.map((branch) => (
+                  <TableRow key={branch.id} hover>
+                    <TableCell>
+                      <Typography variant="body2" fontWeight={500}>
+                        {branch.name}
+                      </Typography>
+                    </TableCell>
+                    <TableCell>
+                      <Chip 
+                        label={branch.code} 
+                        size="small" 
+                        variant="outlined" 
+                        sx={{ fontWeight: 600, borderRadius: 1 }} 
+                      />
+                    </TableCell>
+                    <TableCell>{branch.phone || '-'}</TableCell>
+                    <TableCell>
+                      <Chip
+                        label={branch.isActive ? 'Active' : 'Inactive'}
+                        size="small"
+                        color={branch.isActive ? 'success' : 'default'}
+                        sx={{ fontWeight: 500 }}
+                      />
+                    </TableCell>
+                    <TableCell align="right">
+                      <Button
+                        size="small"
+                        startIcon={<EditIcon />}
+                        sx={{ textTransform: 'none' }}
+                      >
+                        Edit
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </TableContainer>
         )}
       </Box>
     </Container>
