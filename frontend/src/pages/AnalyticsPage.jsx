@@ -273,6 +273,62 @@ const AnalyticsPage = () => {
 
           {/* Enhanced Charts Section */}
           <Grid container spacing={3}>
+            {/* Visit Traffic and Top Mechanics in the Second Row */}
+            <Grid item xs={12} md={6}>
+              <Card sx={{ borderRadius: 2 }}>
+                <CardContent>
+                  <Typography variant="h6" sx={{ fontWeight: 700, mb: 3 }}>Visit Traffic</Typography>
+                  <Box height={350}>
+                    <ResponsiveContainer width="100%" height="100%">
+                      <BarChart data={revenueTrend}>
+                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={theme.palette.divider} />
+                        <XAxis dataKey="label" axisLine={false} tickLine={false} />
+                        <YAxis axisLine={false} tickLine={false} />
+                        <Tooltip cursor={{ fill: theme.palette.action.hover }} />
+                        <Bar 
+                          dataKey="visits" 
+                          fill={theme.palette.info.main} 
+                          radius={[4, 4, 0, 0]} 
+                          name="Visits" 
+                        />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </Box>
+                </CardContent>
+              </Card>
+            </Grid>
+
+            <Grid item xs={12} md={6}>
+              <Card sx={{ borderRadius: 2 }}>
+                <CardContent>
+                  <Typography variant="h6" sx={{ fontWeight: 700, mb: 3 }}>Top Performing Mechanics</Typography>
+                  <Box height={350}>
+                    <ResponsiveContainer width="100%" height="100%">
+                      <BarChart data={topMechanics} layout="vertical">
+                        <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke={theme.palette.divider} />
+                        <XAxis type="number" axisLine={false} tickLine={false} />
+                        <YAxis 
+                          dataKey="mechanicName" 
+                          type="category" 
+                          width={120} 
+                          axisLine={false} 
+                          tickLine={false} 
+                          tick={{ fontSize: 12 }}
+                        />
+                        <Tooltip />
+                        <Bar 
+                          dataKey="revenue" 
+                          fill={theme.palette.secondary.main} 
+                          radius={[0, 4, 4, 0]} 
+                          name="Revenue (Rs.)" 
+                        />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </Box>
+                </CardContent>
+              </Card>
+            </Grid>
+
             {/* Revenue Trend Chart */}
             <Grid item xs={12} lg={8}>
               <Card sx={{ height: '100%', borderRadius: 2 }}>
@@ -365,62 +421,6 @@ const AnalyticsPage = () => {
                         <Tooltip />
                         <Legend verticalAlign="bottom" height={36}/>
                       </PieChart>
-                    </ResponsiveContainer>
-                  </Box>
-                </CardContent>
-              </Card>
-            </Grid>
-
-            {/* Bottom Row */}
-            <Grid item xs={12} md={6}>
-              <Card sx={{ borderRadius: 2 }}>
-                <CardContent>
-                  <Typography variant="h6" sx={{ fontWeight: 700, mb: 3 }}>Visit Traffic</Typography>
-                  <Box height={350}>
-                    <ResponsiveContainer width="100%" height="100%">
-                      <BarChart data={revenueTrend}>
-                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={theme.palette.divider} />
-                        <XAxis dataKey="label" axisLine={false} tickLine={false} />
-                        <YAxis axisLine={false} tickLine={false} />
-                        <Tooltip cursor={{ fill: theme.palette.action.hover }} />
-                        <Bar 
-                          dataKey="visits" 
-                          fill={theme.palette.info.main} 
-                          radius={[4, 4, 0, 0]} 
-                          name="Visits" 
-                        />
-                      </BarChart>
-                    </ResponsiveContainer>
-                  </Box>
-                </CardContent>
-              </Card>
-            </Grid>
-
-            <Grid item xs={12} md={6}>
-              <Card sx={{ borderRadius: 2 }}>
-                <CardContent>
-                  <Typography variant="h6" sx={{ fontWeight: 700, mb: 3 }}>Top Performing Mechanics</Typography>
-                  <Box height={350}>
-                    <ResponsiveContainer width="100%" height="100%">
-                      <BarChart data={topMechanics} layout="vertical">
-                        <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke={theme.palette.divider} />
-                        <XAxis type="number" axisLine={false} tickLine={false} />
-                        <YAxis 
-                          dataKey="mechanicName" 
-                          type="category" 
-                          width={120} 
-                          axisLine={false} 
-                          tickLine={false} 
-                          tick={{ fontSize: 12 }}
-                        />
-                        <Tooltip />
-                        <Bar 
-                          dataKey="revenue" 
-                          fill={theme.palette.secondary.main} 
-                          radius={[0, 4, 4, 0]} 
-                          name="Revenue (Rs.)" 
-                        />
-                      </BarChart>
                     </ResponsiveContainer>
                   </Box>
                 </CardContent>
