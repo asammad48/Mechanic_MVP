@@ -166,7 +166,7 @@ export const updateUser = async (req: Request, res: Response) => {
       include: { role: true, branch: true }
     });
 
-    const { password_hash, ...safeUser } = updatedUser;
+    const { password_hash: _, ...safeUser } = updatedUser;
     res.json(safeUser);
   } catch (error) {
     if (error instanceof z.ZodError) {
