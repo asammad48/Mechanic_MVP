@@ -59,11 +59,11 @@ export const getSummary = async (req: Request, res: Response) => {
       createdAt: dateFilter,
     };
 
-    const [totalVisits, deliveredVisits, statusCounts] = await Promise.all([
+    const [totalVisits, visitsData, statusCounts] = await Promise.all([
       prisma.visit.count({ where }),
       prisma.visit.findMany({
         where: branchFilter,
-        select: { grandTotal: true, dueAmount: true, status: true, createdAt: true }
+        select: { grandTotal: true, dueAmount: true, paidAmount: true, status: true, createdAt: true }
       }),
       prisma.visit.groupBy({
         by: ['status'],
@@ -72,16 +72,18 @@ export const getSummary = async (req: Request, res: Response) => {
       })
     ]);
 
-    // Filter delivered visits for revenue calculation within the date range
-    const filteredDelivered = deliveredVisits.filter(v => 
-      v.status === 'DELIVERED' && 
+    // Financial calculations should consider all relevant visits in the date range
+    // or possibly global unpaid amounts depending on business logic.
+    // For "Gross Earnings" and "Paid vs Unpaid", we typically look at the filtered period.
+    const filteredVisits = visitsData.filter(v => 
       (!dateFilter.gte || v.createdAt >= dateFilter.gte) && 
       v.createdAt <= dateFilter.lte
     );
 
-    const totalRevenue = filteredDelivered.reduce((acc, v) => acc + Number(v.grandTotal), 0);
-    const unpaidAmount = filteredDelivered.reduce((acc, v) => acc + Number(v.dueAmount), 0);
-    const deliveredCount = filteredDelivered.length;
+    const totalRevenue = filteredVisits.reduce((acc, v) => acc + Number(v.grandTotal), 0);
+    const unpaidAmount = filteredVisits.reduce((acc, v) => acc + Number(v.dueAmount), 0);
+    const paidAmount = filteredVisits.reduce((acc, v) => acc + Number(v.paidAmount), 0);
+    const deliveredCount = filteredVisits.filter(v => v.status === 'DELIVERED').length;
     const avgTicketSize = deliveredCount > 0 ? totalRevenue / deliveredCount : 0;
     
     const inProgressCount = (statusCounts as any[]).find(s => s.status === 'IN_PROGRESS')?._count?._all || 0;
@@ -90,6 +92,7 @@ export const getSummary = async (req: Request, res: Response) => {
       totalVisits,
       totalRevenue,
       unpaidAmount,
+      paidAmount,
       avgTicketSize,
       deliveredCount,
       inProgressCount,
@@ -111,12 +114,12 @@ export const getRevenueTrend = async (req: Request, res: Response) => {
       where: {
         ...branchFilter,
         createdAt: dateFilter,
-        status: 'DELIVERED'
       },
       select: {
         createdAt: true,
         grandTotal: true,
         dueAmount: true,
+        status: true,
       },
       orderBy: { createdAt: 'asc' }
     });
@@ -132,7 +135,9 @@ export const getRevenueTrend = async (req: Request, res: Response) => {
         trendMap.set(key, { label: key, revenue: 0, visits: 0, unpaid: 0 });
       }
       const data = trendMap.get(key);
-      data.revenue += Number(v.grandTotal);
+      if (v.status === 'DELIVERED') {
+        data.revenue += Number(v.grandTotal);
+      }
       data.visits += 1;
       data.unpaid += Number(v.dueAmount);
     });
