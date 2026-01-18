@@ -182,9 +182,11 @@ export const updateUser = async (req: Request, res: Response) => {
     }
 
     const { role, ...updateData } = validated;
+    const data: any = { ...updateData };
+    
     const updatedUser = await prisma.user.update({
       where: { id },
-      data: updateData as any,
+      data,
       include: { role: true, branch: true }
     });
 
