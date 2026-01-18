@@ -369,7 +369,6 @@ const AnalyticsPage = () => {
                 </Stack>
               </Paper>
             </Grid>
-          </Grid>
         </>
       )}
     </Box>
