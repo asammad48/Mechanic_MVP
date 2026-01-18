@@ -1,5 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { Box, Typography, TextField, Button, Grid, Select, MenuItem, InputLabel, FormControl, Divider, List, ListItem, ListItemText, Paper } from '@mui/material';
+import { Box, Typography, TextField, Button, Grid, Select, MenuItem, InputLabel, FormControl, Divider, List, ListItem, ListItemText, Paper, Stack } from '@mui/material';
+import { Print as PrintIcon } from '@mui/icons-material';
+import { jsPDF } from 'jspdf';
+import 'jspdf-autotable';
 import api from '../services/api';
 
 const VisitDetailsPanel = ({ visitId, onUpdate }) => {
@@ -81,13 +84,107 @@ const VisitDetailsPanel = ({ visitId, onUpdate }) => {
     }
   };
 
+  const generatePDF = () => {
+    const doc = new jsPDF();
+    const pageWidth = doc.internal.pageSize.getWidth();
+    
+    // Header
+    doc.setFontSize(22);
+    doc.setTextColor(40);
+    doc.text('JULES MECHANIC', pageWidth / 2, 20, { align: 'center' });
+    
+    doc.setFontSize(10);
+    doc.text('Professional Auto Repair Services', pageWidth / 2, 26, { align: 'center' });
+    doc.line(20, 30, pageWidth - 20, 30);
+
+    // Visit Info
+    doc.setFontSize(12);
+    doc.setFont('helvetica', 'bold');
+    doc.text('RECEIPT / JOB CARD', 20, 40);
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(10);
+    doc.text(`Receipt No: ${visit.id.substring(0, 8).toUpperCase()}`, 20, 48);
+    doc.text(`Date: ${new Date(visit.createdAt).toLocaleDateString()}`, 20, 53);
+    doc.text(`Status: ${visit.status}`, 20, 58);
+
+    // Customer & Vehicle Info
+    doc.setFont('helvetica', 'bold');
+    doc.text('Customer Information', 20, 70);
+    doc.text('Vehicle Information', pageWidth / 2 + 10, 70);
+    doc.setFont('helvetica', 'normal');
+    
+    doc.text(`Name: ${visit.customer.name}`, 20, 76);
+    doc.text(`Phone: ${visit.customer.phone}`, 20, 81);
+    
+    doc.text(`Reg No: ${visit.vehicle.regNo}`, pageWidth / 2 + 10, 76);
+    doc.text(`Make/Model: ${visit.vehicle.make} ${visit.vehicle.model}`, pageWidth / 2 + 10, 81);
+    doc.text(`Mileage: ${visit.mileage} km`, pageWidth / 2 + 10, 86);
+
+    let currentY = 100;
+
+    // Items Table
+    const tableData = [];
+    
+    visit.laborItems?.forEach(item => {
+      tableData.push([item.title, 'Labor', '-', '-', `Rs. ${item.subtotal}`]);
+    });
+    
+    visit.partItems?.forEach(item => {
+      tableData.push([item.name, 'Part', item.qty, item.unitPrice, `Rs. ${item.subtotal}`]);
+    });
+    
+    visit.outsideItems?.forEach(item => {
+      tableData.push([item.vendorName + ' (Outside)', 'Work', '-', '-', `Rs. ${item.cost}`]);
+    });
+
+    if (tableData.length > 0) {
+      doc.autoTable({
+        startY: currentY,
+        head: [['Description', 'Type', 'Qty', 'Unit Price', 'Amount']],
+        body: tableData,
+        theme: 'striped',
+        headStyles: { fillColor: [63, 81, 181] }
+      });
+      currentY = doc.lastAutoTable.finalY + 10;
+    } else {
+      doc.text('No service items recorded.', 20, currentY);
+      currentY += 10;
+    }
+
+    // Totals
+    const rightAlignX = pageWidth - 20;
+    doc.setFont('helvetica', 'bold');
+    doc.text(`Grand Total: Rs. ${visit.grandTotal}`, rightAlignX, currentY, { align: 'right' });
+    doc.text(`Paid Amount: Rs. ${visit.paidAmount}`, rightAlignX, currentY + 7, { align: 'right' });
+    doc.setTextColor(220, 0, 0);
+    doc.text(`Balance Due: Rs. ${visit.dueAmount}`, rightAlignX, currentY + 14, { align: 'right' });
+    
+    // Footer
+    doc.setTextColor(100);
+    doc.setFontSize(8);
+    doc.text('Thank you for choosing Jules Mechanic!', pageWidth / 2, pageWidth > 250 ? 280 : 270, { align: 'center' });
+    doc.text('This is a computer generated receipt.', pageWidth / 2, pageWidth > 250 ? 285 : 275, { align: 'center' });
+
+    doc.save(`receipt_${visit.id.substring(0, 8)}.pdf`);
+  };
+
   if (!visit) {
     return <Typography>Select a visit to see details</Typography>;
   }
 
   return (
     <Box sx={{ height: '100%', overflowY: 'auto', pr: 1 }}>
-      <Typography variant="h6">Visit Details</Typography>
+      <Stack direction="row" justifyContent="space-between" alignItems="center" mb={2}>
+        <Typography variant="h6">Visit Details</Typography>
+        <Button 
+          variant="outlined" 
+          startIcon={<PrintIcon />} 
+          onClick={generatePDF}
+          size="small"
+        >
+          Print Receipt
+        </Button>
+      </Stack>
       
       <Box component="form" onSubmit={handleSubmit} sx={{ mt: 2 }}>
         <Grid container spacing={2}>
