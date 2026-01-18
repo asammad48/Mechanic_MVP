@@ -89,14 +89,14 @@ export const getSummary = async (req: Request, res: Response) => {
     const inProgressCount = (statusCounts as any[]).find(s => s.status === 'IN_PROGRESS')?._count?._all || 0;
 
     res.json({
-      totalVisits,
-      totalRevenue,
-      unpaidAmount,
-      paidAmount,
-      avgTicketSize,
-      deliveredCount,
-      inProgressCount,
-      statusBreakdown: (statusCounts as any[]).map(s => ({ status: s.status, count: s._count?._all || 0 }))
+      total_visits: totalVisits,
+      total_revenue: totalRevenue,
+      unpaid_amount: unpaidAmount,
+      paid_amount: paidAmount,
+      avg_ticket_size: avgTicketSize,
+      delivered_count: deliveredCount,
+      in_progress_count: inProgressCount,
+      status_breakdown: (statusCounts as any[]).map(s => ({ status: s.status, count: s._count?._all || 0 }))
     });
   } catch (error) {
     console.error('Analytics summary error:', error);
