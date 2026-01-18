@@ -6,6 +6,7 @@ import DashboardPage from './pages/DashboardPage';
 import AnalyticsPage from './pages/AnalyticsPage';
 import BranchesPage from './pages/BranchesPage';
 import UsersPage from './pages/UsersPage';
+import RolesPage from './pages/RolesPage';
 import AppLayout from './components/AppLayout';
 import { CircularProgress, Box } from '@mui/material';
 
@@ -38,7 +39,7 @@ const Main = () => {
         <Route path="/analytics" element={<AnalyticsPage />} />
         <Route path="/branches" element={<BranchesPage />} />
         <Route path="/users" element={<UsersPage />} />
-        <Route path="/roles" element={<div>Roles Management (RBAC Verified)</div>} />
+        <Route path="/roles" element={user?.isSuperAdmin ? <RolesPage /> : <Navigate to="/" />} />
       </Route>
     </Routes>
   );
