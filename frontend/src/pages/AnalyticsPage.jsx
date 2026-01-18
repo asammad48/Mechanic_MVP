@@ -237,20 +237,7 @@ const AnalyticsPage = () => {
         </Box>
       ) : (
         <>
-          {/* Simplified Grid - Only Two Main Cards */}
-          <Grid container spacing={4} mb={4}>
-            {/* Card 1: Total Visits */}
-            <Grid item xs={12} md={6}>
-              <StatCard 
-                title="Total Visits" 
-                value={summary?.totalVisits || 0} 
-                subtext="Total vehicle visits recorded" 
-                icon={CalendarToday} 
-                color="primary" 
-              />
-            </Grid>
-
-            {/* Card 2: Operational Status (Donut Chart) */}
+            {/* Card 1: Total Visits with Daily Trend */}
             <Grid item xs={12} md={6}>
               <Paper 
                 elevation={0} 
@@ -268,44 +255,118 @@ const AnalyticsPage = () => {
                   }
                 }}
               >
-                <Typography variant="h6" sx={{ fontWeight: 700, mb: 4, color: 'text.primary', display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                  <Box sx={{ p: 1, borderRadius: '10px', bgcolor: 'info.lighter', color: 'info.main', display: 'flex' }}>
-                    <CheckCircle sx={{ fontSize: 18 }} />
-                  </Box>
-                  Operational Status
-                </Typography>
-                <Box sx={{ width: '100%', height: 350 }}>
+                <Stack direction="row" justifyContent="space-between" alignItems="center" mb={2}>
+                  <Typography variant="h6" sx={{ fontWeight: 700, color: 'text.primary', display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                    <Box sx={{ p: 1, borderRadius: '10px', bgcolor: 'primary.lighter', color: 'primary.main', display: 'flex' }}>
+                      <CalendarToday sx={{ fontSize: 18 }} />
+                    </Box>
+                    Daily Visits
+                  </Typography>
+                  <Typography variant="h4" sx={{ fontWeight: 800, color: 'text.primary', letterSpacing: '-0.025em' }}>
+                    {summary?.totalVisits || 0}
+                  </Typography>
+                </Stack>
+                
+                <Box sx={{ width: '100%', height: 280, mt: 2 }}>
                   <ResponsiveContainer>
-                    <PieChart>
-                      <Pie
-                        data={statusBreakdown}
-                        innerRadius={80}
-                        outerRadius={110}
-                        paddingAngle={10}
-                        dataKey="count"
-                        nameKey="status"
-                      >
-                        {statusBreakdown.map((entry, index) => (
-                          <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} stroke="none" />
-                        ))}
-                      </Pie>
+                    <AreaChart data={revenueTrend} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                      <defs>
+                        <linearGradient id="colorVisits" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="5%" stopColor={theme.palette.primary.main} stopOpacity={0.15}/>
+                          <stop offset="95%" stopColor={theme.palette.primary.main} stopOpacity={0}/>
+                        </linearGradient>
+                      </defs>
+                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                      <XAxis 
+                        dataKey="label" 
+                        axisLine={false} 
+                        tickLine={false} 
+                        tick={{ fontSize: 11, fill: '#94a3b8' }}
+                      />
+                      <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: '#94a3b8' }} />
                       <Tooltip 
-                        contentStyle={{ 
-                          borderRadius: '12px', 
-                          border: 'none', 
-                          boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)'
-                        }}
+                        contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }}
                       />
-                      <Legend 
-                        verticalAlign="bottom" 
-                        align="center" 
-                        iconType="circle" 
-                        wrapperStyle={{ paddingTop: 20 }}
-                        formatter={(value) => <span style={{ color: '#64748b', fontWeight: 600, fontSize: '12px' }}>{value}</span>}
+                      <Area 
+                        type="monotone" 
+                        dataKey="visits" 
+                        stroke={theme.palette.primary.main} 
+                        strokeWidth={3} 
+                        fillOpacity={1} 
+                        fill="url(#colorVisits)" 
                       />
-                    </PieChart>
+                    </AreaChart>
                   </ResponsiveContainer>
                 </Box>
+              </Paper>
+            </Grid>
+
+            {/* Card 2: Revenue Collection (Paid vs Unpaid) */}
+            <Grid item xs={12} md={6}>
+              <Paper 
+                elevation={0} 
+                sx={{ 
+                  p: 3.5, 
+                  borderRadius: '24px', 
+                  border: '1px solid #f1f5f9', 
+                  height: '100%',
+                  background: '#fff',
+                  boxShadow: '0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1)',
+                  transition: 'all 0.3s ease',
+                  '&:hover': {
+                    transform: 'translateY(-5px)',
+                    boxShadow: '0 20px 25px -5px rgb(0 0 0 / 0.1)'
+                  }
+                }}
+              >
+                <Typography variant="h6" sx={{ fontWeight: 700, mb: 3, color: 'text.primary', display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                  <Box sx={{ p: 1, borderRadius: '10px', bgcolor: 'success.lighter', color: 'success.main', display: 'flex' }}>
+                    <TrendingUp sx={{ fontSize: 18 }} />
+                  </Box>
+                  Revenue Collection
+                </Typography>
+                
+                <Box sx={{ width: '100%', height: 320 }}>
+                  <ResponsiveContainer>
+                    <BarChart 
+                      data={[
+                        { name: 'Paid', amount: summary?.paidAmount || 0, color: '#10b981' },
+                        { name: 'Unpaid', amount: summary?.unpaidAmount || 0, color: '#f59e0b' }
+                      ]}
+                      margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
+                    >
+                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                      <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 13, fontWeight: 600 }} />
+                      <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: '#94a3b8' }} />
+                      <Tooltip 
+                        cursor={{ fill: '#f8fafc' }}
+                        contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }}
+                        formatter={(value) => [`Rs. ${value.toLocaleString()}`, 'Amount']}
+                      />
+                      <Bar dataKey="amount" radius={[8, 8, 8, 8]} barSize={60}>
+                        {
+                          [
+                            { color: '#10b981' },
+                            { color: '#f59e0b' }
+                          ].map((entry, index) => (
+                            <Cell key={`cell-${index}`} fill={entry.color} />
+                          ))
+                        }
+                      </Bar>
+                    </BarChart>
+                  </ResponsiveContainer>
+                </Box>
+                
+                <Stack direction="row" spacing={3} justifyContent="center" mt={1}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <Box sx={{ width: 10, height: 10, borderRadius: '50%', bgcolor: '#10b981' }} />
+                    <Typography variant="caption" sx={{ fontWeight: 600, color: 'text.secondary' }}>Paid: Rs. {summary?.paidAmount?.toLocaleString() || 0}</Typography>
+                  </Box>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <Box sx={{ width: 10, height: 10, borderRadius: '50%', bgcolor: '#f59e0b' }} />
+                    <Typography variant="caption" sx={{ fontWeight: 600, color: 'text.secondary' }}>Unpaid: Rs. {summary?.unpaidAmount?.toLocaleString() || 0}</Typography>
+                  </Box>
+                </Stack>
               </Paper>
             </Grid>
           </Grid>
