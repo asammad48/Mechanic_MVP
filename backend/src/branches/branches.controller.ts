@@ -1,6 +1,5 @@
 import { Request, Response } from 'express';
 import prisma from '../lib/prisma';
-import { handleErrors } from '../lib/handlers';
 
 export const getAllBranches = async (req: Request, res: Response) => {
   try {
@@ -24,7 +23,8 @@ export const getAllBranches = async (req: Request, res: Response) => {
 
     res.json(branches);
   } catch (error) {
-    handleErrors(res, error);
+    console.error('Error fetching branches:', error);
+    res.status(500).json({ message: 'Internal server error.' });
   }
 };
 
@@ -53,6 +53,7 @@ export const getMyBranch = async (req: Request, res: Response) => {
 
     res.json(branch);
   } catch (error) {
-    handleErrors(res, error);
+    console.error('Error fetching user branch:', error);
+    res.status(500).json({ message: 'Internal server error.' });
   }
 };
