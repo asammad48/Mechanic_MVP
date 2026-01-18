@@ -74,21 +74,26 @@ const BranchesPage = () => {
   }, []);
 
   const handleOpenModal = (branch = null) => {
-    if (branch) {
+    setFormErrors({});
+    if (branch && branch.id) {
       setEditMode(true);
       setSelectedBranchId(branch.id);
       setFormData({
-        name: branch.name,
-        code: branch.code,
+        name: branch.name || '',
+        code: branch.code || '',
         phone: branch.phone || '',
         address: branch.address || ''
       });
     } else {
       setEditMode(false);
       setSelectedBranchId(null);
-      setFormData({ name: '', code: '', phone: '', address: '' });
+      setFormData({ 
+        name: '', 
+        code: '', 
+        phone: '', 
+        address: '' 
+      });
     }
-    setFormErrors({});
     setOpenModal(true);
   };
 
