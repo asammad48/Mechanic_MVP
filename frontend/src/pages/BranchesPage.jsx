@@ -20,7 +20,9 @@ import {
   DialogContent,
   DialogActions,
   TextField,
-  Snackbar
+  Snackbar,
+  Switch,
+  FormControlLabel
 } from '@mui/material';
 import { Add as AddIcon, Edit as EditIcon } from '@mui/icons-material';
 import api from '../services/api';
@@ -49,6 +51,9 @@ const BranchesPage = () => {
     message: '',
     severity: 'success'
   });
+
+  // Toggle state
+  const [toggleLoading, setToggleLoading] = useState({});
 
   const fetchBranches = async () => {
     try {
@@ -147,6 +152,29 @@ const BranchesPage = () => {
     }
   };
 
+  const handleToggleActive = async (branch) => {
+    try {
+      setToggleLoading(prev => ({ ...prev, [branch.id]: true }));
+      await api.patch(`/branches/${branch.id}`, { isActive: !branch.isActive });
+      
+      setSnackbar({
+        open: true,
+        message: `Branch ${!branch.isActive ? 'activated' : 'deactivated'} successfully`,
+        severity: 'success'
+      });
+      fetchBranches();
+    } catch (err) {
+      console.error('Error toggling branch status:', err);
+      setSnackbar({
+        open: true,
+        message: err.response?.data?.message || 'Failed to update branch status',
+        severity: 'error'
+      });
+    } finally {
+      setToggleLoading(prev => ({ ...prev, [branch.id]: false }));
+    }
+  };
+
   const handleCloseSnackbar = () => {
     setSnackbar(prev => ({ ...prev, open: false }));
   };
@@ -242,11 +270,24 @@ const BranchesPage = () => {
                     </TableCell>
                     <TableCell>{branch.phone || '-'}</TableCell>
                     <TableCell>
-                      <Chip
-                        label={branch.isActive ? 'Active' : 'Inactive'}
-                        size="small"
-                        color={branch.isActive ? 'success' : 'default'}
-                        sx={{ fontWeight: 500 }}
+                      <FormControlLabel
+                        control={
+                          <Switch
+                            checked={branch.isActive}
+                            onChange={() => handleToggleActive(branch)}
+                            disabled={toggleLoading[branch.id]}
+                            color="success"
+                            size="small"
+                          />
+                        }
+                        label={
+                          <Chip
+                            label={branch.isActive ? 'Active' : 'Inactive'}
+                            size="small"
+                            color={branch.isActive ? 'success' : 'default'}
+                            sx={{ fontWeight: 500, minWidth: 70 }}
+                          />
+                        }
                       />
                     </TableCell>
                     <TableCell align="right">
