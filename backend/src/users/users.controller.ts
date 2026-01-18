@@ -19,14 +19,19 @@ const createUserSchema = z.object({
   name: z.string().trim().min(1, 'Name is required'),
   email: z.string().trim().email('Invalid email address'),
   password: z.string().min(6, 'Password must be at least 6 characters'),
-  roleId: z.string().min(1, 'Role ID is required'),
+  roleId: z.string().optional(),
+  role: z.string().optional(),
   branchId: z.string().nullable().optional(),
   isSuperAdmin: z.boolean().optional().default(false),
+}).refine(data => data.roleId || data.role, {
+  message: "Either roleId or role name must be provided",
+  path: ["roleId"]
 });
 
 const updateUserSchema = z.object({
   name: z.string().trim().min(1).optional(),
   roleId: z.string().optional(),
+  role: z.string().optional(),
   branchId: z.string().nullable().optional(),
   isActive: z.boolean().optional(),
 });
@@ -88,6 +93,22 @@ export const createUser = async (req: Request, res: Response) => {
       return res.status(403).json({ message: 'Only super admins can create other super admins.' });
     }
 
+    // Resolve roleId if not provided but role name is
+    let roleId = validated.roleId;
+    if (!roleId && validated.role) {
+      const role = await prisma.role.findUnique({
+        where: { name: validated.role }
+      });
+      if (!role) {
+        return res.status(400).json({ message: `Role '${validated.role}' not found.` });
+      }
+      roleId = role.id;
+    }
+
+    if (!roleId) {
+      return res.status(400).json({ message: 'Role ID or role name is required.' });
+    }
+
     // Branch Scoping: Non-super admin must create in their branch
     const branchId = req.user?.isSuperAdmin ? validated.branchId : req.user?.branchId;
     
@@ -107,7 +128,7 @@ export const createUser = async (req: Request, res: Response) => {
         name: validated.name,
         email: validated.email,
         password_hash,
-        roleId: validated.roleId,
+        roleId: roleId,
         branchId: branchId || null,
         isSuperAdmin: validated.isSuperAdmin,
       },
@@ -160,9 +181,10 @@ export const updateUser = async (req: Request, res: Response) => {
       return res.status(403).json({ message: 'You cannot move users to another branch.' });
     }
 
+    const { role, ...updateData } = validated;
     const updatedUser = await prisma.user.update({
       where: { id },
-      data: validated,
+      data: updateData as any,
       include: { role: true, branch: true }
     });
 
