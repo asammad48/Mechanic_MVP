@@ -5,6 +5,7 @@ import LoginPage from './pages/LoginPage';
 import DashboardPage from './pages/DashboardPage';
 import AnalyticsPage from './pages/AnalyticsPage';
 import BranchesPage from './pages/BranchesPage';
+import UsersPage from './pages/UsersPage';
 import AppLayout from './components/AppLayout';
 import { CircularProgress, Box } from '@mui/material';
 
@@ -36,7 +37,7 @@ const Main = () => {
         <Route path="/" element={<DashboardPage />} />
         <Route path="/analytics" element={<AnalyticsPage />} />
         <Route path="/branches" element={<BranchesPage />} />
-        <Route path="/users" element={<div>Users Management (RBAC Verified)</div>} />
+        <Route path="/users" element={<UsersPage />} />
         <Route path="/roles" element={<div>Roles Management (RBAC Verified)</div>} />
       </Route>
     </Routes>
