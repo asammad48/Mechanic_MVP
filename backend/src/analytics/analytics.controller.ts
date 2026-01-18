@@ -26,11 +26,21 @@ const getDateFilter = (range?: string, dateFrom?: string, dateTo?: string) => {
 
   if (range && !dateFrom) {
     from = new Date();
-    if (range === '7d' || range === 'week') from.setDate(from.getDate() - 7);
-    else if (range === '30d' || range === 'month') from.setMonth(from.getMonth() - 30);
-    else if (range === '90d') from.setDate(from.getDate() - 90);
-    else if (range === '12m' || range === 'year') from.setFullYear(from.getFullYear() - 1);
+    if (range === '7d' || range === 'week') {
+      from.setDate(from.getDate() - 7);
+    } else if (range === '30d' || range === 'month') {
+      from.setDate(from.getDate() - 30);
+    } else if (range === '90d') {
+      from.setDate(from.getDate() - 90);
+    } else if (range === '12m' || range === 'year') {
+      from.setFullYear(from.getFullYear() - 1);
+    }
+    // Set to start of day for 'from'
+    from.setHours(0, 0, 0, 0);
   }
+  
+  // Set to end of day for 'to'
+  to.setHours(23, 59, 59, 999);
   
   if (from) {
     return { gte: from, lte: to };
@@ -52,8 +62,8 @@ export const getSummary = async (req: Request, res: Response) => {
     const [totalVisits, deliveredVisits, statusCounts] = await Promise.all([
       prisma.visit.count({ where }),
       prisma.visit.findMany({
-        where: { ...where, status: 'DELIVERED' },
-        select: { grandTotal: true, dueAmount: true, paidAmount: true }
+        where: branchFilter,
+        select: { grandTotal: true, dueAmount: true, status: true, createdAt: true }
       }),
       prisma.visit.groupBy({
         by: ['status'],
@@ -62,9 +72,16 @@ export const getSummary = async (req: Request, res: Response) => {
       })
     ]);
 
-    const totalRevenue = deliveredVisits.reduce((acc, v) => acc + Number(v.grandTotal), 0);
-    const unpaidAmount = deliveredVisits.reduce((acc, v) => acc + Number(v.dueAmount), 0);
-    const deliveredCount = deliveredVisits.length;
+    // Filter delivered visits for revenue calculation within the date range
+    const filteredDelivered = deliveredVisits.filter(v => 
+      v.status === 'DELIVERED' && 
+      (!dateFilter.gte || v.createdAt >= dateFilter.gte) && 
+      v.createdAt <= dateFilter.lte
+    );
+
+    const totalRevenue = filteredDelivered.reduce((acc, v) => acc + Number(v.grandTotal), 0);
+    const unpaidAmount = filteredDelivered.reduce((acc, v) => acc + Number(v.dueAmount), 0);
+    const deliveredCount = filteredDelivered.length;
     const avgTicketSize = deliveredCount > 0 ? totalRevenue / deliveredCount : 0;
     
     const inProgressCount = (statusCounts as any[]).find(s => s.status === 'IN_PROGRESS')?._count?._all || 0;
@@ -120,7 +137,10 @@ export const getRevenueTrend = async (req: Request, res: Response) => {
       data.unpaid += Number(v.dueAmount);
     });
 
-    res.json(Array.from(trendMap.values()));
+    // Fill in gaps if necessary or just return the sorted results
+    const sortedTrend = Array.from(trendMap.values()).sort((a, b) => a.label.localeCompare(b.label));
+
+    res.json(sortedTrend);
   } catch (error) {
     console.error('Revenue trend error:', error);
     res.status(500).json({ message: 'Error fetching revenue trend' });
