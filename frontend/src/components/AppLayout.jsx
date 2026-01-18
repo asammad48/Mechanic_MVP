@@ -26,7 +26,9 @@ import {
   Settings as SettingsIcon,
   Logout as LogoutIcon,
   DirectionsCar as CarIcon,
-  Business as BusinessIcon
+  Business as BusinessIcon,
+  People as PeopleIcon,
+  Security as SecurityIcon
 } from '@mui/icons-material';
 import { useNavigate, useLocation, Outlet } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
@@ -49,12 +51,15 @@ const AppLayout = () => {
   const menuItems = [
     { text: 'Dashboard', icon: <DashboardIcon />, path: '/', roles: ['Receptionist', 'Manager', 'Owner/Admin', 'Mechanic'] },
     { text: 'Analytics', icon: <AnalyticsIcon />, path: '/analytics', roles: ['Manager', 'Owner/Admin'] },
+    { text: 'Users', icon: <PeopleIcon />, path: '/users', roles: ['Manager', 'Owner/Admin'] },
+    { text: 'Roles', icon: <SecurityIcon />, path: '/roles', isSuperAdminOnly: true },
     { text: 'Branches', icon: <BusinessIcon />, path: '/branches', isSuperAdminOnly: true },
     { text: 'Settings', icon: <SettingsIcon />, path: '/settings', roles: ['Receptionist', 'Manager', 'Owner/Admin', 'Mechanic'] },
   ];
 
   const filteredItems = menuItems.filter(item => {
-    if (item.isSuperAdminOnly && !user?.isSuperAdmin) return false;
+    if (user?.isSuperAdmin) return true;
+    if (item.isSuperAdminOnly) return false;
     if (item.roles && !item.roles.includes(user?.role)) return false;
     return true;
   });

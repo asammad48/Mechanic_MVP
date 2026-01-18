@@ -36,6 +36,8 @@ const Main = () => {
         <Route path="/" element={<DashboardPage />} />
         <Route path="/analytics" element={<AnalyticsPage />} />
         <Route path="/branches" element={<BranchesPage />} />
+        <Route path="/users" element={<div>Users Management (RBAC Verified)</div>} />
+        <Route path="/roles" element={<div>Roles Management (RBAC Verified)</div>} />
       </Route>
     </Routes>
   );
