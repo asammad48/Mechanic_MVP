@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Modal, Box, Typography, TextField, Button, Grid } from '@mui/material';
+import { Modal, Box, Typography, TextField, Button, Grid, IconButton } from '@mui/material';
+import CloseIcon from '@mui/icons-material/Close';
 import api from '../services/api';
 
 const style = {
@@ -125,9 +126,14 @@ const NewCarEntryModal = ({ open, handleClose, onVisitCreated, prefilledData }) 
   return (
     <Modal open={open} onClose={handleClose}>
       <Box sx={style}>
-        <Typography variant="h6" component="h2">
-          New Car Entry
-        </Typography>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+          <Typography variant="h6" component="h2">
+            New Car Entry
+          </Typography>
+          <IconButton onClick={handleClose} size="small">
+            <CloseIcon />
+          </IconButton>
+        </Box>
 
         {apiError && (
           <Typography color="error" sx={{ mt: 2, p: 1, border: '1px solid', borderColor: 'error.main', borderRadius: 1, bgcolor: 'error.light', color: 'error.contrastText' }}>
