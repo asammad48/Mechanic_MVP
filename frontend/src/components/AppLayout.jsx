@@ -49,12 +49,12 @@ const AppLayout = () => {
   const menuItems = [
     { text: 'Dashboard', icon: <DashboardIcon />, path: '/', roles: ['Receptionist', 'Manager', 'Owner/Admin', 'Mechanic'] },
     { text: 'Analytics', icon: <AnalyticsIcon />, path: '/analytics', roles: ['Manager', 'Owner/Admin'] },
-    { text: 'Branches', icon: <BusinessIcon />, path: '/branches', roles: ['Owner/Admin'], isSuperAdminOnly: true },
+    { text: 'Branches', icon: <BusinessIcon />, path: '/branches', isSuperAdminOnly: true },
     { text: 'Settings', icon: <SettingsIcon />, path: '/settings', roles: ['Receptionist', 'Manager', 'Owner/Admin', 'Mechanic'] },
   ];
 
   const filteredItems = menuItems.filter(item => {
-    if (item.isSuperAdminOnly && !user?.isSuperAdmin && user?.role !== 'Owner/Admin') return false;
+    if (item.isSuperAdminOnly && !user?.isSuperAdmin) return false;
     if (item.roles && !item.roles.includes(user?.role)) return false;
     return true;
   });
