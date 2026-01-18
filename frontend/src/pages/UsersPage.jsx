@@ -24,9 +24,11 @@ import {
 import {
   Search as SearchIcon,
   FilterList as FilterIcon,
+  Add as AddIcon,
 } from '@mui/icons-material';
 import api from '../services/api';
 import { useAuth } from '../contexts/AuthContext';
+import NewUserModal from '../components/NewUserModal';
 
 const UsersPage = () => {
   const { user: currentUser } = useAuth();
@@ -34,6 +36,7 @@ const UsersPage = () => {
   const [branches, setBranches] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   // Filter states
   const [search, setSearch] = useState('');
@@ -65,6 +68,12 @@ const UsersPage = () => {
     fetchInitialData();
   }, [fetchInitialData]);
 
+  const handleUserCreated = (newUser) => {
+    setUsers(prev => [newUser, ...prev]);
+  };
+
+  const canCreateUser = currentUser?.isSuperAdmin || currentUser?.role === 'Manager' || currentUser?.role === 'Owner/Admin';
+
   const filteredUsers = users.filter((user) => {
     const matchesSearch = 
       user.name?.toLowerCase().includes(search.toLowerCase()) ||
@@ -89,7 +98,25 @@ const UsersPage = () => {
     <Container maxWidth={false} sx={{ py: 4 }}>
       <Box sx={{ mb: 4, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <Typography variant="h4" fontWeight={700}>Users Management</Typography>
+        {canCreateUser && (
+          <Button
+            variant="contained"
+            startIcon={<AddIcon />}
+            onClick={() => setIsModalOpen(true)}
+            sx={{ px: 3 }}
+          >
+            Create User
+          </Button>
+        )}
       </Box>
+
+      <NewUserModal
+        open={isModalOpen}
+        handleClose={() => setIsModalOpen(false)}
+        onUserCreated={handleUserCreated}
+        currentUser={currentUser}
+        branches={branches}
+      />
 
       {error && (
         <Alert severity="error" sx={{ mb: 3 }}>
