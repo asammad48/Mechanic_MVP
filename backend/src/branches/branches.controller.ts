@@ -18,6 +18,10 @@ const updateBranchSchema = z.object({
   isActive: z.boolean().optional(),
 });
 
+const branchIdParamsSchema = z.object({
+  id: z.string().min(1, 'Branch ID is required'),
+});
+
 export const getAllBranches = async (req: Request, res: Response) => {
   try {
     if (!req.user?.isSuperAdmin) {
@@ -119,19 +123,27 @@ export const updateBranch = async (req: Request, res: Response) => {
       return res.status(403).json({ message: 'Forbidden. Super admin access required.' });
     }
 
-    const { id } = req.params;
+    const { id } = branchIdParamsSchema.parse(req.params);
     const validated = updateBranchSchema.parse(req.body);
 
+    const existingBranch = await prisma.branch.findUnique({
+      where: { id }
+    });
+
+    if (!existingBranch) {
+      return res.status(404).json({ message: 'Branch not found.' });
+    }
+
     if (validated.code) {
-      const existing = await prisma.branch.findFirst({
+      const duplicateCode = await prisma.branch.findFirst({
         where: { 
           code: validated.code,
           id: { not: id }
         }
       });
 
-      if (existing) {
-        return res.status(400).json({ message: `Branch code ${validated.code} already exists.` });
+      if (duplicateCode) {
+        return res.status(409).json({ message: `Branch code ${validated.code} already exists on another branch.` });
       }
     }
 
